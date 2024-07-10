@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, CSSProperties} from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
 import { IoClose } from "react-icons/io5";
@@ -6,9 +6,20 @@ import { useDispatch  } from "react-redux";
 import { userLogin } from "../redux/reducers/userSlice";
 import { verifyOtp, resendOtp } from "../services/userAuth";
 import { toast } from "react-toastify";
+import ScaleLoader from 'react-spinners/ScaleLoader';
 
 // Types
 import { VerifyOtpModalProps } from "../types/type";
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
 
 const customStyles = {
   content: {
@@ -36,6 +47,7 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
   const [otpTimer, setOtpTimer] = useState<number>(30); 
   const [showResendButton, setShowResendButton] = useState<boolean>(false);
   const [startTimer, setStartTimer] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const dispatch = useDispatch()
 
@@ -58,11 +70,13 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
 
   const handleResendOtp = () => {
     setStartTimer(true)
+    setLoading(true)
     const resendData = {
       email,
       username,
     };
     resendOtp(resendData).then((res) => {
+      setLoading(false)
       if (res.status === "success") {
         toast.success(`OTP successfully sent to ${res.email}`);
       }
@@ -71,6 +85,7 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
 
   const handleVerifyOtp = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    setLoading(true)
     if (otp.trim() === "" || otp.length !== 6) {
       return toast.error("Enter 6 digit OTP");
     }
@@ -81,6 +96,7 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
       password,
     };
     const result = await verifyOtp(otpData);
+    setLoading(false)
     if (result.status === "success") {
       dispatch(userLogin({user:result.newUser,token:result.token}))
       onRequestClose();
@@ -134,6 +150,11 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
             </button>
           )}
         </div>
+        {loading && (
+        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+      </div>
+      )}
         <div className="flex justify-center mb-4">
           <button
             type="submit"

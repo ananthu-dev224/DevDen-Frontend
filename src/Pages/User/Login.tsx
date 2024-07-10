@@ -1,19 +1,32 @@
-import { FC, useState , useEffect} from "react";
-import { FcGoogle } from "react-icons/fc";
+import { FC, useState , useEffect, CSSProperties} from "react";
 import { toast } from "react-toastify";
 import ForgotPassModal from "../../Components/Forgotpass";
 import { useNavigate } from "react-router-dom";
 import { useDispatch , useSelector } from "react-redux";
-import { login } from "../../services/userAuth";
+import { login, oauth } from "../../services/userAuth";
 import { userLogin } from "../../redux/reducers/userSlice";
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import ScaleLoader from 'react-spinners/ScaleLoader';
 // Types
 import { LoginFormState } from "../../types/type";
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
+
 
 export const Login: FC = () => {
   const [state, setState] = useState<LoginFormState>({
     isModalOpen: false,
     email: "",
     password: "",
+    loading: false
   });
 
   const navigate = useNavigate();
@@ -26,9 +39,12 @@ export const Login: FC = () => {
   },[])
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    setState({ ...state, loading: true });
     if (state.email.trim() === "" || state.password.trim() === "") {
+      setState({ ...state, loading: false });
       return toast.info("Fill all the fields.");
     }else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) {
+      setState({ ...state, loading: false });
       return toast.error("Email is not valid");
     }
     const loginData = {
@@ -36,11 +52,29 @@ export const Login: FC = () => {
       password: state.password,
     };
     const result = await login(loginData);
+    setState({ ...state, loading: false });
     if (result.status === "success") {
       dispatch(userLogin({user:result.user,token:result.token}))
       navigate("/");
     }
   };
+
+  const gSuccess = async (res:any) => {
+    setState({ ...state, loading: true });
+    const gData = {
+      token:res.credential
+    }
+    const result = await oauth(gData);
+    setState({ ...state, loading: false });
+    if (result.status === "success") {
+      dispatch(userLogin({user:result.user,token:result.token}))
+      navigate("/");
+    }
+  }
+
+  const gFail = () => {
+     toast.error("An error occured in google sigin , please use other method")
+  }
 
   return (
     <>
@@ -100,13 +134,14 @@ export const Login: FC = () => {
             </div>
           </form>
           <div className="flex justify-center mb-4 mt-4">
-            <button
-              type="button"
-              className="w-full sm:w-auto px-4 py-2 bg-white border border-stone-950 font-medium rounded-md shadow-sm hover:bg-black hover:text-white focus:outline-none flex items-center justify-center"
-            >
-              <FcGoogle className="w-6 h-6 mr-2" />
-              Login with Google
-            </button>
+          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+            <div>
+                <GoogleLogin
+                    onSuccess={gSuccess}
+                    onError={gFail}
+                />
+            </div>
+        </GoogleOAuthProvider>
           </div>
           <div className="text-center">
             <p className="text-sm text-gray-600">
@@ -119,6 +154,11 @@ export const Login: FC = () => {
               </a>
             </p>
           </div>
+          {state.loading && (
+        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+        <ScaleLoader color="black" loading={state.loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+      </div>
+      )}
         </div>
       </div>
       <ForgotPassModal

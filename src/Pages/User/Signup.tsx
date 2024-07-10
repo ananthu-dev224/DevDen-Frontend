@@ -1,12 +1,23 @@
-import { useState, FC, useEffect } from "react";
-import { FcGoogle } from "react-icons/fc";
+import { useState, FC, useEffect , CSSProperties } from "react";
 import { toast } from "react-toastify";
 import VerifyOtpModal from "../../Components/VerifyOtp";
 import { useSelector } from "react-redux";
 import { signupUser } from "../../services/userAuth";
 import { useNavigate } from "react-router-dom";
+import ScaleLoader from 'react-spinners/ScaleLoader';
 // Types
 import { SignupFormState } from "../../types/type";
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
+
 
 export const Signup: FC = () => {
   const [state, setState] = useState<SignupFormState>({
@@ -15,6 +26,7 @@ export const Signup: FC = () => {
     email: "",
     password: "",
     confirmpass: "",
+    loading: false
   });
   const navigate = useNavigate()
   const user = useSelector((state:any) => state.user.user)
@@ -28,23 +40,29 @@ export const Signup: FC = () => {
 
   const handleSignup = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    setState({ ...state, loading: true });
     if (
       state.username.trim() === "" ||
       state.email.trim() === "" ||
       state.password.trim() === ""
     ) {
+      setState({ ...state, loading: false });
       return toast.error("Please fill in all fields.");
     } else if (state.password !== state.confirmpass) {
+      setState({ ...state, loading: false });
       return toast.error("Passwords do not match.");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) {
+      setState({ ...state, loading: false });
       return toast.error("Email is not valid");
     }else if (!/^[a-z0-9\W]+$/.test(state.username)) {
+      setState({ ...state, loading: false });
       return toast.error("Username should contain only small letters, numbers and special cases");
     }else if (
       !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
         state.password
       )
     ) {
+      setState({ ...state, loading: false });
       return toast.info(
         "Password should contain an upper case , lower case , digit and an special character"
       );
@@ -55,6 +73,7 @@ export const Signup: FC = () => {
       password: state.password,
     };
     const result = await signupUser(userData);
+    setState({ ...state, loading: false });
     if (result.status === "success") {
       toast.success(`OTP successfully sent to ${state.email}`)
       setState({ ...state, isModalOpen: true });
@@ -138,16 +157,7 @@ export const Signup: FC = () => {
               </button>
             </div>
           </form>
-          <div className="flex justify-center mb-4 mt-4">
-            <button
-              type="button"
-              className="w-full sm:w-auto px-4 py-2 bg-white border border-stone-950 font-medium rounded-md shadow-sm hover:bg-black hover:text-white focus:outline-none flex items-center justify-center"
-            >
-              <FcGoogle className="w-6 h-6 mr-2" />
-              Sign up with Google
-            </button>
-          </div>
-          <div className="text-center">
+          <div className="text-center mt-2">
             <p className="text-sm text-gray-600">
               Already registered?{" "}
               <a
@@ -159,6 +169,11 @@ export const Signup: FC = () => {
             </p>
           </div>
         </div>
+        {state.loading && (
+        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+        <ScaleLoader color="black" loading={state.loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+      </div>
+      )}
       </div>
       <VerifyOtpModal
         isOpen={state.isModalOpen}

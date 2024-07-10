@@ -1,13 +1,24 @@
-import React, { FC, useState } from "react";
+import React, { FC, useState, CSSProperties } from "react";
 import Modal from "react-modal";
 import { IoClose } from "react-icons/io5";
 import { toast } from "react-toastify";
 import { forgotPassword } from "../services/userAuth";
+import ScaleLoader from 'react-spinners/ScaleLoader';
 
 interface ForgotPassProps {
   isOpen: boolean;
   onRequestClose: () => void;
 }
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
 
 const customStyles = {
   content: {
@@ -26,12 +37,16 @@ Modal.setAppElement("#root");
 
 const ForgotPassModal: FC<ForgotPassProps> = ({ isOpen, onRequestClose }) => {
   const [email, setEmail] = useState("");
+  const [loading,setLoading] = useState(false)
 
   const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
+    setLoading(true)
     if (email.trim() === "") {
+      setLoading(false)
       return toast.info("Fill all the fields.");
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setLoading(false)
       return toast.error("Email is not valid");
     }
     const forgotData = {
@@ -39,6 +54,7 @@ const ForgotPassModal: FC<ForgotPassProps> = ({ isOpen, onRequestClose }) => {
     };
 
     const res = await forgotPassword(forgotData);
+    setLoading(false)
     if (res.status === "success") {
       toast.success(res.message);
       onRequestClose();
@@ -77,6 +93,11 @@ const ForgotPassModal: FC<ForgotPassProps> = ({ isOpen, onRequestClose }) => {
             required
           />
         </div>
+        {loading && (
+        <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+      </div>
+      )}
         <div className="flex justify-center mb-4">
           <button
             type="submit"

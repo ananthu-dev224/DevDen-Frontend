@@ -1,12 +1,23 @@
-import { FC, useState, useEffect, useRef } from "react";
+import { FC, useState, useEffect, useRef, CSSProperties } from "react";
 import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
-
+import ScaleLoader from 'react-spinners/ScaleLoader';
 import { resetPassword, validateResetToken } from "../../services/userAuth";
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
 
 export const ResetPass: FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
+  const [loading, setLoading] = useState(false);
   const { token }: any = useParams();
   const navigate = useNavigate();
 
@@ -31,10 +42,13 @@ export const ResetPass: FC = () => {
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    setLoading(true)
     if (password.trim() === "" || confirmPass.trim() === "") {
+      setLoading(false)
       toast.info("Fill the fields.");
       return;
     } else if (password !== confirmPass) {
+      setLoading(false)
       toast.error("Passwords do not match.");
       return;
     }
@@ -43,7 +57,7 @@ export const ResetPass: FC = () => {
         token
     }
     const res = await resetPassword(resetData);
-    console.log(res)
+    setLoading(false)
     if(res.status === 'success'){
         toast.success(res.message)
         navigate('/login')
@@ -100,6 +114,11 @@ export const ResetPass: FC = () => {
             </div>
           </form>
         </div>
+        {loading && (
+        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+      </div>
+      )}
       </div>
     </>
   );

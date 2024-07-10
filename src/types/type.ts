@@ -32,6 +32,10 @@ export interface resetData {
   token: string;
 }
 
+export interface gData {
+  token: string;
+}
+
 export interface VerifyOtpModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
@@ -46,12 +50,14 @@ export interface SignupFormState {
   email: string;
   password: string;
   confirmpass: string;
+  loading: boolean;
 }
 
 export interface LoginFormState {
   isModalOpen: boolean;
   email: string;
   password: string;
+  loading:boolean;
 }
 
 export interface adminSliceType {

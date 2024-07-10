@@ -2,7 +2,7 @@ import api from '../utils/api';
 import { toast } from 'react-toastify';
 
 // Types
-import { UserData, otpData, resendData, loginData , forgotData, resetData} from '../types/type';
+import { UserData, otpData, resendData, loginData , forgotData, resetData, gData} from '../types/type';
 
 export const signupUser = async (userData: UserData): Promise<any> => {
   try {
@@ -91,6 +91,20 @@ export const validateResetToken = async (token:string): Promise<any> => {
 export const resetPassword = async (resetData:resetData): Promise<any> => {
   try {
     const response = await api.post('/user/reset-password',resetData);
+    return response.data;
+  } catch (error:any) {
+    if (error.response) {
+      toast.error(error.response.data.message || 'An error occurred.');
+      return error.response.data;
+    } else {
+      toast.error('An unexpected error occurred. Please try again later.');
+    }
+  }
+};
+
+export const oauth = async (gData:gData): Promise<any> => {
+  try {
+    const response = await api.post('/user/oauth',gData);
     return response.data;
   } catch (error:any) {
     if (error.response) {

@@ -9,6 +9,19 @@ module.exports = {
   ],
   prefix: "",
   theme: {
+    extend: {
+      animation: {
+        fadeIn: 'fadeIn 1s ease-in-out',
+        'fadeIn-delay-200': 'fadeIn 1s ease-in-out 0.2s',
+        'fadeIn-delay-400': 'fadeIn 1s ease-in-out 0.4s',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: 0 },
+          '100%': { opacity: 1 },
+        },
+      },
+    },
     container: {
       center: true,
       padding: "2rem",

@@ -15,6 +15,7 @@ import Dashboard from "./Pages/Admin/Dashboard";
 import Users from "./Pages/Admin/Users";
 import Home from "./Pages/User/Home";
 import { ResetPass } from "./Pages/User/ResetPass";
+import Page404 from "./Pages/Page404";
 // Protected
 import AdminProtected from "./routes/adminProtected";
 import UserProtected from "./routes/userProtected";
@@ -28,6 +29,7 @@ const App: FC = () => {
         <PersistGate loading={null} persistor={persistor}>
           <Router>
             <Routes>
+              <Route path="*" element={<Page404 />} />
               <Route path="/" element={<UserProtected><Home /></UserProtected>} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
