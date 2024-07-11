@@ -1,14 +1,25 @@
-import { FC , useState, useEffect } from "react";
+import { FC , useState, useEffect, CSSProperties } from "react";
 import {toast} from 'react-toastify'
 import { useNavigate } from "react-router-dom";
 import { useDispatch , useSelector  } from "react-redux";
 import { login } from "../../services/adminAuth";
 import { adminLogin } from "../../redux/reducers/adminSlice";
+import ScaleLoader from 'react-spinners/ScaleLoader';
 
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
 
 export const Admin: FC = () => {
   const [email,setEmail] = useState<string>('')
   const [password,setPassword] = useState<string>('')
+  const [loading,setLoading] = useState<boolean>(false)
   const navigate = useNavigate()
   const admin = useSelector((state:any) => state.admin.admin)
   const dispatch = useDispatch()
@@ -22,9 +33,12 @@ export const Admin: FC = () => {
 
   const handleLogin = async(e : React.MouseEvent<HTMLButtonElement>) => {
        e.preventDefault()
+       setLoading(true)
        if(email.trim() === '' || password.trim() === ''){
+          setLoading(false)
           return toast.info('Fill all the fields.')
        }else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setLoading(false)
         return toast.error("Email is not valid");
       }
       const adminData = {
@@ -33,6 +47,7 @@ export const Admin: FC = () => {
       }
 
       const res = await login(adminData)
+      setLoading(false)
       if(res.status === 'success'){
           dispatch(adminLogin({email:res.email,token:res.token}))
           navigate('/dashboard')
@@ -88,6 +103,11 @@ export const Admin: FC = () => {
               </button>
             </div>
           </form>
+          {loading && (
+        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+      </div>
+      )}
         </div>
       </div>
     </>
