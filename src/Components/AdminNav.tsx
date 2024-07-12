@@ -15,6 +15,7 @@ import { adminLogout } from "../redux/reducers/adminSlice";
 interface NavItemProps {
   icon: JSX.Element;
   text?: string;
+  to?: string;
 }
 
 const AdminNav: FC = (): ReactElement => {
@@ -55,11 +56,11 @@ const AdminNav: FC = (): ReactElement => {
               <h1 className="text-lg font-semibold">{admin}</h1>
           </div>
           <div className="flex flex-col items-center mt-10 space-y-4 overflow-auto">
-            <NavItem icon={<TbDeviceDesktopAnalytics className="h-6 w-6" />} text="Dashboard" />
-            <NavItem icon={<FaUsersGear className="h-6 w-6" />} text="User Desk" />
-            <NavItem icon={<TbMessageReport className="h-6 w-6" />} text="Comment Reports" />
-            <NavItem icon={<MdEventBusy className="h-6 w-6" />} text="Event Reports" />
-            <NavItem icon={<FaRegCalendarCheck className="h-6 w-6" />} text="Event Portal" />
+            <NavItem icon={<TbDeviceDesktopAnalytics className="h-6 w-6" />} text="Dashboard" to='/dashboard' />
+            <NavItem icon={<FaUsersGear className="h-6 w-6" />} text="User Desk" to='/user-desk'  />
+            <NavItem icon={<TbMessageReport className="h-6 w-6" />} text="Comment Reports" to='/comments'  />
+            <NavItem icon={<MdEventBusy className="h-6 w-6" />} text="Event Reports" to='/events'  />
+            <NavItem icon={<FaRegCalendarCheck className="h-6 w-6" />} text="Event Portal" to='/event-portal'  />
           </div>
           <div className="mt-auto mb-10 mr-10" onClick={handleLogout}>
              
@@ -67,11 +68,11 @@ const AdminNav: FC = (): ReactElement => {
           </div>
         </nav>
         <div className="md:hidden fixed bottom-0 left-0 w-full bg-white py-2 border-t border-gray-300 flex justify-around">
-        <TbDeviceDesktopAnalytics className="h-6 w-6" />
-        <FaUsersGear className="h-6 w-6" />
-        <TbMessageReport className="h-6 w-6" />
-        <MdEventBusy className="h-6 w-6" />
-        <FaRegCalendarCheck className="h-6 w-6" />
+        <TbDeviceDesktopAnalytics className="h-6 w-6" onClick={() => navigate('/dashboard')} />
+        <FaUsersGear className="h-6 w-6"  onClick={() => navigate('/user-desk')} />
+        <TbMessageReport className="h-6 w-6" onClick={() => navigate('/comments')} />
+        <MdEventBusy className="h-6 w-6" onClick={() => navigate('/events')} />
+        <FaRegCalendarCheck className="h-6 w-6" onClick={() => navigate('/event-portal')}/>
         <Logout />
         </div>
       <div className="hidden md:block absolute bottom-0 left-0 right-0 h-4 bg-white"></div>
@@ -80,8 +81,15 @@ const AdminNav: FC = (): ReactElement => {
   );
 };
 
-const NavItem: FC<NavItemProps> = ({ icon, text }) => (
-  <div className="flex items-center hover:bg-gray-200 rounded-lg p-2 cursor-pointer w-full text-center md:text-left">
+const NavItem: FC<NavItemProps> = ({ icon, text , to}) => {
+   const navigate = useNavigate()
+   const handleClick = () => {
+       if(to){
+        navigate(to);
+       }
+   }
+   return (
+  <div className="flex items-center hover:bg-gray-200 rounded-lg p-2 cursor-pointer w-full text-center md:text-left" onClick={handleClick}>
     <div className="flex items-center space-x-3">
       {icon}
       {text && (
@@ -89,6 +97,9 @@ const NavItem: FC<NavItemProps> = ({ icon, text }) => (
       )}
     </div>
   </div>
-);
+)};
+
+
+
 
 export default AdminNav;
