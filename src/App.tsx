@@ -36,7 +36,7 @@ const App: FC = () => {
               <Route path="/reset-password/:token" element={<ResetPass />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/dashboard" element={<AdminProtected><Dashboard /></AdminProtected>} />
-              <Route path="/user-management" element={<AdminProtected><Users /></AdminProtected>} />
+              <Route path="/user-desk" element={<AdminProtected><Users /></AdminProtected>} />
             </Routes>
           </Router>
         </PersistGate>
@@ -44,5 +44,7 @@ const App: FC = () => {
     </>
   );
 };
+
+
 
 export default App;

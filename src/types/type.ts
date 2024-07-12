@@ -89,3 +89,11 @@ export interface userSliceType {
   user: userSlicePayload | null;
   token:string | null;
 }
+
+export interface users {
+  _id:string;
+  username:string;
+  email:string;
+  isActive:boolean;
+  createdAt:string;
+}

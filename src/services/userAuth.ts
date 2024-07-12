@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 // Types
 import { UserData, otpData, resendData, loginData , forgotData, resetData, gData} from '../types/type';
 
+// User auth services
+
 export const signupUser = async (userData: UserData): Promise<any> => {
   try {
     const response = await api.post('/user/signup', userData);
