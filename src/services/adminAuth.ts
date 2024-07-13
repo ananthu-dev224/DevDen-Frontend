@@ -1,5 +1,5 @@
 import { toast } from "react-toastify";
-import api from '../utils/api';
+import api from '../utils/api/admin';
 
 import { adminData } from "../types/type";
 

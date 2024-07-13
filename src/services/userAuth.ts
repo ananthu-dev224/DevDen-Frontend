@@ -1,4 +1,4 @@
-import api from '../utils/api';
+import api from '../utils/api/user';
 import { toast } from 'react-toastify';
 
 // Types
