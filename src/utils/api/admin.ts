@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { baseUrl } from '../../constants/url';
 import { store } from '../../redux/store';
-import { adminLogout } from '../../redux/reducers/adminSlice';
-import { toast } from 'sonner';
+
 
 const adminInstance = axios.create({
     baseURL: baseUrl,
