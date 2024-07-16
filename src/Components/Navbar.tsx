@@ -57,7 +57,7 @@ const Navbar: FC = (): ReactElement => {
             <img src={logo} alt="Logo" className="w-full object-contain" />
           </div>
           <div className="flex flex-col items-center mt-10 space-y-4 overflow-hiddenz ">
-            <NavItem icon={<HomeIcon />} text="Home" />
+            <NavItem icon={<HomeIcon />} text="Home" handleClick={() => navigate('/')}  />
             <NavItem icon={<Explore />} text="Explore" />
             <NavItem icon={<Host />} text="Create Event" />
             <div className="relative">
@@ -70,17 +70,17 @@ const Navbar: FC = (): ReactElement => {
             <NavItem icon={<FaComments className="h-6 w-6" />} text="Chat" />
           </div>
           <div className="mt-auto mb-10 mr-10">
-            <NavItem icon={<Profile />} text="Profile" />
+            <NavItem icon={<Profile />} text="Profile" handleClick={() => navigate('/profile')} />
             <NavItem icon={<Logout  />} text="Logout" handleClick={handleLogout} />
           </div>
         </nav>
         <div className="md:hidden fixed bottom-0 left-0 w-full bg-white py-2 border-t border-gray-300 flex justify-around">
-          <HomeIcon />
+          <HomeIcon fn={() => navigate('/')} />
           <Explore />
           <Host />
           <Notification />       
           <FaComments className="h-6 w-6" />
-          <Profile />
+          <Profile fn={() => navigate('/profile')} />
         </div>
       <div className="hidden md:block absolute bottom-0 left-0 right-0 h-4 bg-white"></div>
       </div>

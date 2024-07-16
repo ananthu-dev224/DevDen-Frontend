@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { userSlicePayload, userSliceType } from "../../types/type";
+import { userSlicePayload, userSliceType , editProfilePayload} from "../../types/type";
 
 const initialState: userSliceType = {
   user: null,
@@ -18,8 +18,11 @@ const userSlice = createSlice({
       state.user = null;
       state.token = null;
     },
+    editProfile: (state, action: PayloadAction<{ user:editProfilePayload}>) => {
+      state.user = action.payload.user;
+    }
   },
 });
 
-export const {userLogin,userLogout} = userSlice.actions;
+export const {userLogin,userLogout,editProfile} = userSlice.actions;
 export default userSlice.reducer;

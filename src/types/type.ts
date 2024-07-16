@@ -74,15 +74,34 @@ export interface userSlicePayload {
   _id: string;
   username: string;
   email: string;
-  password: string;
+  password?: string;
   name?: string;
-  image?: string;
+  dp?: string;
+  banner?: string;
   about?: string;
   website?: string;
   contact?: number;
   place?: string;
   isActive: boolean;
   createdAt: string;
+  googleId?:string;
+}
+
+export interface editProfilePayload {
+  _id: string;
+  username: string;
+  email: string;
+  password?: string;
+  name?: string;
+  dp?: string;
+  banner?: string;
+  about?: string;
+  website?: string;
+  contact?: number;
+  place?: string;
+  isActive: boolean;
+  createdAt: string;
+  googleId?:string;
 }
 
 export interface userSliceType {
@@ -97,3 +116,18 @@ export interface users {
   isActive:boolean;
   createdAt:string;
 }
+
+export interface profileData {
+  _id: string;
+  username: string;
+  contact: string;
+  name: string;
+  about: string;
+  website: string;
+  place: string;
+}
+
+export interface IconProps {
+  fn?: () => void;
+}
+

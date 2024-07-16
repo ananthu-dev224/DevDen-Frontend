@@ -73,7 +73,7 @@ const AdminNav: FC = (): ReactElement => {
         <TbMessageReport className="h-6 w-6" onClick={() => navigate('/comments')} />
         <MdEventBusy className="h-6 w-6" onClick={() => navigate('/events')} />
         <FaRegCalendarCheck className="h-6 w-6" onClick={() => navigate('/event-portal')}/>
-        <Logout />
+        <Logout fn={handleLogout} />
         </div>
       <div className="hidden md:block absolute bottom-0 left-0 right-0 h-4 bg-white"></div>
       </div>

@@ -2,6 +2,7 @@ import AdminNav from "../../Components/AdminNav";
 import { FC, useState, useMemo, useEffect } from "react";
 import { Pagination } from "flowbite-react";
 import { confirmAlert } from "react-confirm-alert";
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { getUsers, toggleUser } from "../../services/adminAuth";
 import { users } from "../../types/type";
@@ -10,11 +11,12 @@ const Users: FC = () => {
   const [search, setSearch] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
+  const dispatch = useDispatch()
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await getUsers();
+        const response = await getUsers(dispatch);
         setUsers(response.users);
       } catch (error) {
         console.error("Error fetching users: ", error);
@@ -33,7 +35,7 @@ const Users: FC = () => {
           {
             label: 'Yes',
             onClick: async() => {
-              const response = await toggleUser(id);
+              const response = await toggleUser(id,dispatch);
               if(response.status === 'success'){
                 setUsers(
                   users.map((user) =>
