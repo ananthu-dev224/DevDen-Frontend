@@ -1,5 +1,5 @@
 import AdminNav from "../../Components/AdminNav";
-import { FC, useState, useMemo, useEffect } from "react";
+import { FC, useState, useEffect } from "react";
 import { Pagination } from "flowbite-react";
 import { confirmAlert } from "react-confirm-alert";
 import { useDispatch } from "react-redux";
@@ -37,6 +37,7 @@ const Users: FC = () => {
             onClick: async() => {
               const response = await toggleUser(id,dispatch);
               if(response.status === 'success'){
+                toast.success('User status changed success.')
                 setUsers(
                   users.map((user) =>
                     user._id === id ? { ...user, isActive: !user.isActive } : user

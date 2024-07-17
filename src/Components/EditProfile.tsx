@@ -1,16 +1,24 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, CSSProperties } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { setProfile } from "../services/profile";
 import { toast } from "sonner";
 import { editProfile } from "../redux/reducers/userSlice";
+import ScaleLoader from 'react-spinners/ScaleLoader';
+import { EditProfileProps } from "../types/type";
 
-interface EditProfileProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
 
 const EditProfile: FC<EditProfileProps> = ({ isOpen, onClose }) => {
+  const [loading,setLoading] = useState(false)
   const user = useSelector((state: any) => state.user.user);
   const dispatch = useDispatch();
   const [formData, setFormData] = useState({
@@ -37,21 +45,21 @@ const EditProfile: FC<EditProfileProps> = ({ isOpen, onClose }) => {
     const placePattern = /^[A-Za-z\s]+$/;
 
     if (formData.contact && !contactPattern.test(formData.contact)) {
-      toast("Contact should only contain numbers");
+      toast.info("Contact should only contain numbers");
       return false;
     }
     if (formData.username && !usernamePattern.test(formData.username)) {
-      toast(
+      toast.info(
         "Username should only contain lowercase letters, numbers, and underscores"
       );
       return false;
     }
     if (formData.website && !websitePattern.test(formData.website)) {
-      toast("Website should be a valid URL");
+      toast.info("Website should be a valid URL");
       return false;
     }
     if (formData.place && !placePattern.test(formData.place)) {
-      toast("Location should only contain alphabets");
+      toast.info("Location should only contain alphabets");
       return false;
     }
     return true;
@@ -60,7 +68,7 @@ const EditProfile: FC<EditProfileProps> = ({ isOpen, onClose }) => {
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+    setLoading(true)
     const profileData = {
       _id: user?._id,
       username: formData.username,
@@ -71,15 +79,12 @@ const EditProfile: FC<EditProfileProps> = ({ isOpen, onClose }) => {
       website: formData.website,
     };
     const result = await setProfile(profileData, dispatch);
+    setLoading(false)
     if (result.status === 'updated') {
       const userData = result.user;
-      toast("Profile updated successfully");
+      toast.success("Profile updated successfully");
       dispatch(editProfile({ user: userData }));
       onClose();
-    } else  if(result.status === 'success'){
-      toast("Profile updated successfully");
-    } else {
-      toast(result.message || "Failed to update profile");
     }
   };
 
@@ -215,6 +220,11 @@ const EditProfile: FC<EditProfileProps> = ({ isOpen, onClose }) => {
           </div>
         </form>
       </div>
+      {loading && (
+        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+      </div>
+      )}
     </div>
   );
 };

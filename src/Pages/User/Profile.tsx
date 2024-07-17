@@ -141,7 +141,7 @@ const Profile: FC = () => {
                     : "text-gray-500"
                 }
               >
-                Comments
+                Saved
               </Tab>
             </TabList>
             <TabPanels>

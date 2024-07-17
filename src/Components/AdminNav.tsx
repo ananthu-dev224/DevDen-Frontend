@@ -25,7 +25,6 @@ const AdminNav: FC = (): ReactElement => {
   useEffect(() => {
       if(!admin){
           navigate('/admin')
-          toast("Please Login to get access.")
       }
   },[])
   const handleLogout = () => {

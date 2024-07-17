@@ -36,6 +36,19 @@ export interface gData {
   token: string;
 }
 
+export interface ImageCropperModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  imageSrc: string;
+  cropShape: "rectangular" | "circular";
+}
+
+export interface EditProfileProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+
 export interface VerifyOtpModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
@@ -125,6 +138,16 @@ export interface profileData {
   about: string;
   website: string;
   place: string;
+}
+
+export interface dpData {
+  userId: string;
+  dp: string;
+}
+
+export interface bannerData {
+  userId: string;
+  banner: string;
 }
 
 export interface IconProps {

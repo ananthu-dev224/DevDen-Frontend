@@ -28,7 +28,6 @@ const Navbar: FC = (): ReactElement => {
   useEffect(() => {
         if(!user){
             navigate('/login')
-            toast("Please Login.")
         }
   },[])
 

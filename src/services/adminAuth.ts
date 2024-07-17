@@ -27,7 +27,7 @@ export const getUsers = async (dispatch:any): Promise<any> => {
   } catch (error:any) {
     if (error.response) {
       const message = error.response.data.message || "An error occurred";
-      sonner(message);
+      sonner.error(message);
 
       // Check for token verification and authorization errors
       if (message === "Token expired"  || message === 'No token in request' || message === "Failed to authenticate token" || message === "Invalid Token Structure" || message === "Access Denied: Admin Only") {
@@ -36,7 +36,7 @@ export const getUsers = async (dispatch:any): Promise<any> => {
 
       return error.response.data;
     } else {
-      sonner("An unexpected error occurred. Please try again later.");
+      sonner.error("An unexpected error occurred. Please try again later.");
     }
   }
 };
@@ -48,7 +48,7 @@ export const toggleUser = async (id:string,dispatch:any): Promise<any> => {
   } catch (error:any) {
     if (error.response) {
       const message = error.response.data.message || "An error occurred";
-      sonner(message);
+      sonner.error(message);
 
       // Check for token verification and authorization errors
       if (message === "Token expired"  || message === 'No token in request' || message === "Failed to authenticate token" || message === "Invalid Token Structure" || message === "Access Denied: Admin Only") {
@@ -57,7 +57,7 @@ export const toggleUser = async (id:string,dispatch:any): Promise<any> => {
 
       return error.response.data;
     } else {
-      sonner("An unexpected error occurred. Please try again later.");
+      sonner.error("An unexpected error occurred. Please try again later.");
     }
   }
 };

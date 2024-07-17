@@ -15,13 +15,11 @@ const AdminProtected: React.FC<{ children: React.ReactNode }> = ({ children }) =
     
     if (!admin_token) {
       navigate('/admin');
-      toast("Please login to get access.")
     }
   }, [admin_token, navigate]);
 
   return admin_token ? children : null;
 };
-
 
 
 export default AdminProtected;
