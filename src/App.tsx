@@ -14,6 +14,7 @@ import { Admin } from "./Pages/Admin/Admin";
 import Dashboard from "./Pages/Admin/Dashboard";
 import Users from "./Pages/Admin/Users";
 import Home from "./Pages/User/Home";
+import Profile from "./Pages/User/Profile";
 import { ResetPass } from "./Pages/User/ResetPass";
 import Page404 from "./Pages/Page404";
 // Protected
@@ -31,6 +32,7 @@ const App: FC = () => {
             <Routes>
               <Route path="*" element={<Page404 />} />
               <Route path="/" element={<UserProtected><Home /></UserProtected>} />
+              <Route path="/profile" element={<UserProtected><Profile /></UserProtected>} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password/:token" element={<ResetPass />} />

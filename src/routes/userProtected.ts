@@ -20,7 +20,6 @@ const UserProtected: React.FC<{ children: React.ReactNode }> = ({
 
     if (!userToken) {
       navigate("/login");
-      toast("Please Login.");
     } else if (user && !user.isActive) {
       navigate("/login");
       toast("Your account is blocked by Admin.");
@@ -29,6 +28,7 @@ const UserProtected: React.FC<{ children: React.ReactNode }> = ({
 
   return userToken && user && user.isActive ? children : null;
 };
+
 
 
 

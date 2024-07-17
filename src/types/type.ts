@@ -36,6 +36,19 @@ export interface gData {
   token: string;
 }
 
+export interface ImageCropperModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  imageSrc: string;
+  cropShape: "rectangular" | "circular";
+}
+
+export interface EditProfileProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+
 export interface VerifyOtpModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
@@ -74,15 +87,34 @@ export interface userSlicePayload {
   _id: string;
   username: string;
   email: string;
-  password: string;
+  password?: string;
   name?: string;
-  image?: string;
+  dp?: string;
+  banner?: string;
   about?: string;
   website?: string;
   contact?: number;
   place?: string;
   isActive: boolean;
   createdAt: string;
+  googleId?:string;
+}
+
+export interface editProfilePayload {
+  _id: string;
+  username: string;
+  email: string;
+  password?: string;
+  name?: string;
+  dp?: string;
+  banner?: string;
+  about?: string;
+  website?: string;
+  contact?: number;
+  place?: string;
+  isActive: boolean;
+  createdAt: string;
+  googleId?:string;
 }
 
 export interface userSliceType {
@@ -97,3 +129,28 @@ export interface users {
   isActive:boolean;
   createdAt:string;
 }
+
+export interface profileData {
+  _id: string;
+  username: string;
+  contact: string;
+  name: string;
+  about: string;
+  website: string;
+  place: string;
+}
+
+export interface dpData {
+  userId: string;
+  dp: string;
+}
+
+export interface bannerData {
+  userId: string;
+  banner: string;
+}
+
+export interface IconProps {
+  fn?: () => void;
+}
+
