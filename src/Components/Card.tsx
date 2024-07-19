@@ -1,4 +1,6 @@
-import { FC } from "react";
+import { FC , useState} from "react";
+import pfp from '../assets/pfp.jpeg'
+import ReportModal from "./Report";
 import {
   FaEllipsisV,
   FaHeart,
@@ -9,7 +11,7 @@ import {
   FaClock,
   FaMapMarkerAlt,
 } from "react-icons/fa";
-
+import DotDropdown from "./DotDropdown";
 interface CardProps {
   userProfileImage: string;
   username: string;
@@ -24,6 +26,7 @@ interface CardProps {
   ticketPrice?: number;
   likeCount: number;
   commentCount: number;
+  isProfile?:boolean;
 }
 
 const Card: FC<CardProps> = ({
@@ -40,13 +43,23 @@ const Card: FC<CardProps> = ({
   ticketPrice,
   likeCount,
   commentCount,
+  isProfile
 }) => {
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [isReport, setReport] = useState(false);
+
+
+
+  const openReportModal = () => {
+    setReport(true);
+    setDropdownOpen(false);
+  };
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center">
           <img
-            src={userProfileImage}
+            src={userProfileImage ? userProfileImage : pfp}
             alt={username}
             className="w-10 h-10 rounded-full"
           />
@@ -55,7 +68,28 @@ const Card: FC<CardProps> = ({
             <span className="block text-sm text-gray-500">{postedTime}</span>
           </div>
         </div>
-        <FaEllipsisV className="text-gray-500 cursor-pointer" />
+        <FaEllipsisV className="text-gray-500 cursor-pointer" onClick={() => setDropdownOpen(prev => !prev)} />
+        {isDropdownOpen && !isProfile && (
+            <DotDropdown
+              onReport={openReportModal}
+              onClose={() => setDropdownOpen(false)}
+            />
+          )}
+          {isDropdownOpen && isProfile && (
+            <DotDropdown
+              isProfile={true}
+              onAbort={() => {
+                // Logic for aborting
+              }}
+              onDetails={() => {
+                // Logic for showing details
+              }}
+              onEdit={() => {
+                // Logic for editing
+              }}
+              onClose={() => setDropdownOpen(false)}
+            />
+          )}
       </div>
       <div className="w-full h-auto">
         <img src={image} alt="Event" className="w-full h-full object-cover" />
@@ -109,6 +143,10 @@ const Card: FC<CardProps> = ({
             </button>
           )}
         </div>
+        <ReportModal
+        isOpen={isReport}
+        onRequestClose={() => setReport(false)}
+      />
       </div>
     </div>
   );

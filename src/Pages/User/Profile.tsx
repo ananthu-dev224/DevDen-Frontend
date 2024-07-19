@@ -1,5 +1,5 @@
-import { FC, useState } from "react";
-import { useSelector } from "react-redux";
+import { FC, useState, useEffect } from "react";
+import { useSelector , useDispatch} from "react-redux";
 import Navbar from "../../Components/Navbar";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { FaCalendarAlt, FaLink, FaRegAddressCard , FaMapMarkerAlt, FaCamera } from "react-icons/fa";
@@ -7,16 +7,40 @@ import header from "../../assets/header.jpg";
 import pfp from "../../assets/pfp.jpeg";
 import EditProfile from "../../Components/EditProfile";
 import ImageCropperModal from "../../Components/ImageCropper";
+import {toast} from 'sonner'
+import Card from "../../Components/Card";
+import { getCreatedEvents } from "../../services/event";
 
 const Profile: FC = () => {
   const [isEditProfileOpen, setEditProfileOpen] = useState(false);
   const [isCropperOpen, setCropperOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState("");
+  const [events, setEvents] = useState<any[]>([]);
   const [cropShape, setCropShape] = useState<"rectangular" | "circular">("rectangular");
   const user = useSelector((state: any) => state.user.user);
+  const dispatch = useDispatch()
 
   const openEditProfile = () => setEditProfileOpen(true);
   const closeEditProfile = () => setEditProfileOpen(false);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const userId = user._id
+        const response = await getCreatedEvents(userId,dispatch);
+        if (response.status === "success") {
+          setEvents(response.events);
+        } else {
+          toast.error("Failed to fetch your events");
+        }
+      } catch (error) {
+        console.error("Error fetching events", error);
+        toast.error("An error occurred while fetching events");
+      }
+    };
+
+    fetchEvents();
+  },[])
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -32,6 +56,30 @@ const Profile: FC = () => {
         }
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Function to calculate "posted time" relative to current time
+  const calculatePostedTime = (eventDate: Date): string => {
+    const currentDateTime = new Date();
+    const diffMs = currentDateTime.getTime() - eventDate.getTime();
+
+    // Convert milliseconds to minutes
+    const diffMinutes = Math.round(diffMs / (1000 * 60));
+
+    if (diffMinutes < 1) {
+      return "Now";
+    } else if (diffMinutes === 1) {
+      return "1 minute ago";
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes} minutes ago`;
+    } else if (diffMinutes < 120) {
+      return "1 hour ago";
+    } else if (diffMinutes < 1440) {
+      const diffHours = Math.floor(diffMinutes / 60);
+      return `${diffHours} hours ago`;
+    } else {
+      return eventDate.toLocaleString();
     }
   };
 
@@ -146,10 +194,35 @@ const Profile: FC = () => {
             </TabList>
             <TabPanels>
               <TabPanel>
-                
+                  {/*Created Events*/}
+                  {events.map(event => {
+            const createdAtDate = new Date(event.createdAt);
+            const postedTime = calculatePostedTime(createdAtDate);
+            return (
+              <div className="mt-3">
+                <Card
+                key={event._id}
+                date={event.date}
+                postedTime={postedTime}
+                time={event.time}
+                isFree={event.isFree}
+                userProfileImage={event.hostId.dp}
+                username={event.hostId.username}
+                venue={event.venue}
+                ticketPrice={event.ticketPrice}
+                ticketsLeft={event.totalTickets}
+                commentCount={0}
+                likeCount={event.likes.length}
+                image={event.image}
+                description={event.description}
+                isProfile={true}
+              />
+              </div>
+            );
+          })}
               </TabPanel>
               <TabPanel>
-                
+                  {/* Saved Events*/}
               </TabPanel>
             </TabPanels>
           </TabGroup>

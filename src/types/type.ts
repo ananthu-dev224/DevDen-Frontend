@@ -167,3 +167,11 @@ export interface IconProps {
   fn?: () => void;
 }
 
+export interface DropdownProps {
+  onReport?: () => void;
+  onClose: () => void;
+  onEdit?: () => void;
+  onAbort?: () => void;
+  onDetails?: () => void;
+  isProfile?: boolean;
+}
