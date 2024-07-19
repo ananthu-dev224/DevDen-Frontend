@@ -36,6 +36,19 @@ export interface gData {
   token: string;
 }
 
+export interface eventData {
+  hostId:String,
+  image:String,
+  description:String,
+  date:String,
+  time:String,
+  venue:String,
+  isFree:Boolean,
+  totalTickets?:Number,
+  ticketPrice?:Number,
+}
+
+
 export interface ImageCropperModalProps {
   isOpen: boolean;
   onClose: () => void;

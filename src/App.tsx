@@ -15,6 +15,7 @@ import Dashboard from "./Pages/Admin/Dashboard";
 import Users from "./Pages/Admin/Users";
 import Home from "./Pages/User/Home";
 import Profile from "./Pages/User/Profile";
+import CreateEvent from "./Pages/User/CreateEvent";
 import { ResetPass } from "./Pages/User/ResetPass";
 import Page404 from "./Pages/Page404";
 // Protected
@@ -33,6 +34,7 @@ const App: FC = () => {
               <Route path="*" element={<Page404 />} />
               <Route path="/" element={<UserProtected><Home /></UserProtected>} />
               <Route path="/profile" element={<UserProtected><Profile /></UserProtected>} />
+              <Route path="/create-event" element={<UserProtected><CreateEvent /></UserProtected>} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password/:token" element={<ResetPass />} />
