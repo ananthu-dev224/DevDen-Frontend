@@ -46,8 +46,8 @@ export interface eventData {
   isFree:Boolean,
   totalTickets?:Number,
   ticketPrice?:Number,
+  eventId?:String
 }
-
 
 export interface ImageCropperModalProps {
   isOpen: boolean;

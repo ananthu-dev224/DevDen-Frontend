@@ -12,7 +12,13 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 import DotDropdown from "./DotDropdown";
+import { confirmAlert } from 'react-confirm-alert';
+import { useDispatch } from "react-redux";
+import { abortEvent } from "../services/event";
+import {toast} from 'sonner'
+import EditEventModal from "./EditEventModal";
 interface CardProps {
+  eventId: string;
   userProfileImage: string;
   username: string;
   postedTime: string;
@@ -27,9 +33,11 @@ interface CardProps {
   likeCount: number;
   commentCount: number;
   isProfile?:boolean;
+  profileEventChange?: () => void;
 }
 
 const Card: FC<CardProps> = ({
+  eventId,
   userProfileImage,
   username,
   postedTime,
@@ -43,12 +51,25 @@ const Card: FC<CardProps> = ({
   ticketPrice,
   likeCount,
   commentCount,
-  isProfile
+  isProfile,
+  profileEventChange
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isReport, setReport] = useState(false);
+  const [isEditModal,setEditModal] = useState(false);
+  const dispatch = useDispatch()
 
-
+  const initialEventData = {
+    eventId,
+    image,
+    description,
+    date,
+    time,
+    venue,
+    isFree,
+    totalTickets: ticketsLeft || 0,
+    ticketPrice: ticketPrice || 0,
+  };
 
   const openReportModal = () => {
     setReport(true);
@@ -79,13 +100,33 @@ const Card: FC<CardProps> = ({
             <DotDropdown
               isProfile={true}
               onAbort={() => {
-                // Logic for aborting
+                confirmAlert({
+                  title: 'Confirm to Abort the Event',
+                  message: 'This Action cant be undone , if the event has tickets then all the tickets will be refunded!',
+                  buttons: [
+                    {
+                      label: 'Yes',
+                      onClick: async() => {
+                          const result = await abortEvent(eventId,dispatch)
+                          if(result.status === 'success'){
+                            if(profileEventChange){
+                              profileEventChange();
+                            }
+                            toast.success("Event aborted successfully.")
+                          }
+                      }
+                    },
+                    {
+                      label: 'No',
+                    }
+                  ]
+                });
               }}
               onDetails={() => {
                 // Logic for showing details
               }}
               onEdit={() => {
-                // Logic for editing
+                setEditModal(true)
               }}
               onClose={() => setDropdownOpen(false)}
             />
@@ -147,6 +188,7 @@ const Card: FC<CardProps> = ({
         isOpen={isReport}
         onRequestClose={() => setReport(false)}
       />
+      <EditEventModal profileEventChange={profileEventChange} showModal={isEditModal} closeModal={() => setEditModal(false)} initialEventData={initialEventData}/>
       </div>
     </div>
   );

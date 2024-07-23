@@ -111,6 +111,7 @@ const Home: FC = () => {
             const username = user.username === event.hostId.username ? `${event.hostId.username} (You)` : event.hostId.username;
             return (
               <Card
+                eventId={event._id}
                 key={event._id}
                 date={event.date}
                 postedTime={postedTime}

@@ -13,6 +13,7 @@ import { Login } from "./Pages/User/Login";
 import { Admin } from "./Pages/Admin/Admin";
 import Dashboard from "./Pages/Admin/Dashboard";
 import Users from "./Pages/Admin/Users";
+import EventPortal from "./Pages/Admin/EventPortal";
 import Home from "./Pages/User/Home";
 import Profile from "./Pages/User/Profile";
 import CreateEvent from "./Pages/User/CreateEvent";
@@ -41,6 +42,7 @@ const App: FC = () => {
               <Route path="/admin" element={<Admin />} />
               <Route path="/dashboard" element={<AdminProtected><Dashboard /></AdminProtected>} />
               <Route path="/user-desk" element={<AdminProtected><Users /></AdminProtected>} />
+              <Route path="/event-portal" element={<AdminProtected><EventPortal /></AdminProtected>} />
             </Routes>
           </Router>
         </PersistGate>

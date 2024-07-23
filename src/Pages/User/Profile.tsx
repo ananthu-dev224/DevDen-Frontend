@@ -1,13 +1,19 @@
 import { FC, useState, useEffect } from "react";
-import { useSelector , useDispatch} from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Navbar from "../../Components/Navbar";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { FaCalendarAlt, FaLink, FaRegAddressCard , FaMapMarkerAlt, FaCamera } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaLink,
+  FaRegAddressCard,
+  FaMapMarkerAlt,
+  FaCamera,
+} from "react-icons/fa";
 import header from "../../assets/header.jpg";
 import pfp from "../../assets/pfp.jpeg";
 import EditProfile from "../../Components/EditProfile";
 import ImageCropperModal from "../../Components/ImageCropper";
-import {toast} from 'sonner'
+import { toast } from "sonner";
 import Card from "../../Components/Card";
 import { getCreatedEvents } from "../../services/event";
 
@@ -16,31 +22,33 @@ const Profile: FC = () => {
   const [isCropperOpen, setCropperOpen] = useState(false);
   const [imageToCrop, setImageToCrop] = useState("");
   const [events, setEvents] = useState<any[]>([]);
-  const [cropShape, setCropShape] = useState<"rectangular" | "circular">("rectangular");
+  const [cropShape, setCropShape] = useState<"rectangular" | "circular">(
+    "rectangular"
+  );
   const user = useSelector((state: any) => state.user.user);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const openEditProfile = () => setEditProfileOpen(true);
   const closeEditProfile = () => setEditProfileOpen(false);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const userId = user._id
-        const response = await getCreatedEvents(userId,dispatch);
-        if (response.status === "success") {
-          setEvents(response.events);
-        } else {
-          toast.error("Failed to fetch your events");
-        }
-      } catch (error) {
-        console.error("Error fetching events", error);
-        toast.error("An error occurred while fetching events");
+  const fetchEvents = async () => {
+    try {
+      const userId = user._id;
+      const response = await getCreatedEvents(userId, dispatch);
+      if (response.status === "success") {
+        setEvents(response.events);
+      } else {
+        toast.error("Failed to fetch your events");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching events", error);
+      toast.error("An error occurred while fetching events");
+    }
+  };
 
+  useEffect(() => {
     fetchEvents();
-  },[])
+  }, [Card]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -94,15 +102,22 @@ const Profile: FC = () => {
       <div className="flex-1 md:p-10 ml-0 md:ml-72 overflow-auto">
         <div className="flex flex-col space-y-10 pb-20 md:pb-0">
           <div className="relative w-full">
-            <img src={user?.banner || header} alt="Banner" className="w-full max-h-60 object-cover rounded-sm hover:cursor-pointer"
-            onClick={() => document.getElementById("banner-image-input")?.click()}
-             />
+            <img
+              src={user?.banner || header}
+              alt="Banner"
+              className="w-full max-h-60 object-cover rounded-sm hover:cursor-pointer"
+              onClick={() =>
+                document.getElementById("banner-image-input")?.click()
+              }
+            />
             <div className="absolute left-1/2 transform -translate-x-1/2 md:left-10 -bottom-14">
               <img
                 src={user?.dp || pfp}
                 alt="Profile"
                 className="w-28 h-28 rounded-full border-2 border-white hover:cursor-pointer"
-                onClick={() => document.getElementById("profile-image-input")?.click()}
+                onClick={() =>
+                  document.getElementById("profile-image-input")?.click()
+                }
               />
               <label className="absolute bottom-2 right-2 cursor-pointer">
                 <FaCamera className="text-gray-500" />
@@ -127,7 +142,9 @@ const Profile: FC = () => {
             </label>
           </div>
           <div className="flex flex-col items-center md:items-start md:ml-40 mt-16 px-4 md:px-0">
-            <h1 className="text-2xl font-semibold mt-4 sm:mt-0">@{user?.username}</h1>
+            <h1 className="text-2xl font-semibold mt-4 sm:mt-0">
+              @{user?.username}
+            </h1>
             <div className="flex space-x-4 mt-2">
               <span>
                 <strong>100</strong> Followers
@@ -139,35 +156,51 @@ const Profile: FC = () => {
                 <strong>50</strong> Events
               </span>
             </div>
-            <button className="mt-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-full" onClick={openEditProfile}>
+            <button
+              className="mt-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-full"
+              onClick={openEditProfile}
+            >
               Edit Profile
             </button>
           </div>
           <div className="px-4 md:px-0">
-            <p className="text-center md:text-left font-bold mb-3">{user?.name || 'Name'}</p>
-            <p className="text-center md:text-left">{user?.about || 'Member of Devden community.'}</p>
+            <p className="text-center md:text-left font-bold mb-3">
+              {user?.name || "Name"}
+            </p>
+            <p className="text-center md:text-left">
+              {user?.about || "Member of Devden community."}
+            </p>
           </div>
           <div className="flex flex-wrap justify-center md:justify-start space-x-6 text-gray-600  px-4 md:px-0">
             <div className="flex items-center space-x-2">
               <FaCalendarAlt className="w-5 h-5" />
-              <span>Joined: {user?.createdAt ? new Date(parseInt(user.createdAt)).toLocaleDateString() : 'N/A'}</span>
-            </div>
-            {user?.website && <div className="flex items-center space-x-2">
-              <FaLink className="w-5 h-5" />
               <span>
-                <a href={user?.website} className="text-blue-500">
-                  {user?.website}
-                </a>
+                Joined:{" "}
+                {user?.createdAt
+                  ? new Date(parseInt(user.createdAt)).toLocaleDateString()
+                  : "N/A"}
               </span>
-            </div>}
+            </div>
+            {user?.website && (
+              <div className="flex items-center space-x-2">
+                <FaLink className="w-5 h-5" />
+                <span>
+                  <a href={user?.website} className="text-blue-500">
+                    {user?.website}
+                  </a>
+                </span>
+              </div>
+            )}
             <div className="flex items-center space-x-2">
-              <FaRegAddressCard  className="w-5 h-5" />
+              <FaRegAddressCard className="w-5 h-5" />
               <span>{user?.contact || user?.email}</span>
             </div>
-            {user?.place && <div className="flex items-center space-x-2">
-              <FaMapMarkerAlt className="w-5 h-5" />
-              <span>{user?.place}</span>
-            </div>}
+            {user?.place && (
+              <div className="flex items-center space-x-2">
+                <FaMapMarkerAlt className="w-5 h-5" />
+                <span>{user?.place}</span>
+              </div>
+            )}
           </div>
           <TabGroup>
             <TabList className="flex space-x-4 border-b ml-4 sm:ml-0">
@@ -194,41 +227,51 @@ const Profile: FC = () => {
             </TabList>
             <TabPanels>
               <TabPanel>
-                  {/*Created Events*/}
-                  {events.map(event => {
-            const createdAtDate = new Date(event.createdAt);
-            const postedTime = calculatePostedTime(createdAtDate);
-            return (
-              <div className="mt-3">
-                <Card
-                key={event._id}
-                date={event.date}
-                postedTime={postedTime}
-                time={event.time}
-                isFree={event.isFree}
-                userProfileImage={event.hostId.dp}
-                username={event.hostId.username}
-                venue={event.venue}
-                ticketPrice={event.ticketPrice}
-                ticketsLeft={event.totalTickets}
-                commentCount={0}
-                likeCount={event.likes.length}
-                image={event.image}
-                description={event.description}
-                isProfile={true}
-              />
-              </div>
-            );
-          })}
+                {/*Created Events*/}
+                {events.map((event) => {
+                  const createdAtDate = new Date(event.createdAt);
+                  const postedTime = calculatePostedTime(createdAtDate);
+                  return (
+                    <div className="m-3" key={event._id}>
+                      <Card
+                        eventId={event._id}
+                        key={event._id}
+                        date={event.date}
+                        postedTime={postedTime}
+                        time={event.time}
+                        isFree={event.isFree}
+                        userProfileImage={event.hostId.dp}
+                        username={event.hostId.username}
+                        venue={event.venue}
+                        ticketPrice={event.ticketPrice}
+                        ticketsLeft={event.totalTickets}
+                        commentCount={0}
+                        likeCount={event.likes.length}
+                        image={event.image}
+                        description={event.description}
+                        isProfile={true}
+                        profileEventChange={fetchEvents}
+                      />
+                      {!event.isApproved && (
+                        <div className="p-3 flex justify-center items-center bg-blue-500 text-white font-semibold rounded-b-lg">
+                        This Event will go live until admin approve!
+                      </div>
+                      )}
+                    </div>
+                  );
+                })}
               </TabPanel>
-              <TabPanel>
-                  {/* Saved Events*/}
-              </TabPanel>
+              <TabPanel>{/* Saved Events*/}</TabPanel>
             </TabPanels>
           </TabGroup>
         </div>
         <EditProfile isOpen={isEditProfileOpen} onClose={closeEditProfile} />
-        <ImageCropperModal isOpen={isCropperOpen} onClose={handleCropperClose} imageSrc={imageToCrop} cropShape={cropShape} />
+        <ImageCropperModal
+          isOpen={isCropperOpen}
+          onClose={handleCropperClose}
+          imageSrc={imageToCrop}
+          cropShape={cropShape}
+        />
       </div>
     </div>
   );
