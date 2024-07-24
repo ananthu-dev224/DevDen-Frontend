@@ -13,8 +13,8 @@ import {
 } from "react-icons/fa";
 import DotDropdown from "./DotDropdown";
 import { confirmAlert } from 'react-confirm-alert';
-import { useDispatch } from "react-redux";
-import { abortEvent } from "../services/event";
+import { useDispatch, useSelector } from "react-redux";
+import { abortEvent, likeEvent } from "../services/event";
 import {toast} from 'sonner'
 import EditEventModal from "./EditEventModal";
 interface CardProps {
@@ -30,7 +30,7 @@ interface CardProps {
   isFree: boolean;
   ticketsLeft?: number;
   ticketPrice?: number;
-  likeCount: number;
+  likeCount: any[];
   commentCount: number;
   isProfile?:boolean;
   profileEventChange?: () => void;
@@ -57,7 +57,9 @@ const Card: FC<CardProps> = ({
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isReport, setReport] = useState(false);
   const [isEditModal,setEditModal] = useState(false);
+  const [likes, setLikes] = useState(likeCount);
   const dispatch = useDispatch()
+  const user = useSelector((store: any) => store.user.user);
 
   const initialEventData = {
     eventId,
@@ -75,6 +77,23 @@ const Card: FC<CardProps> = ({
     setReport(true);
     setDropdownOpen(false);
   };
+
+  const handleLike = async () => {
+     const likeData = {
+       userId:user._id,
+       eventId
+     }
+
+    const result = await likeEvent(likeData, dispatch);
+    if (result.status === 'success') {
+      if (likes.includes(user._id)) {
+        setLikes(likes.filter((id: string) => id !== user._id));
+      } else {
+        setLikes([...likes, user._id]);
+      }
+    }
+
+  }
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <div className="flex items-center justify-between p-4">
@@ -169,8 +188,13 @@ const Card: FC<CardProps> = ({
         <div className="flex justify-between items-center mt-7">
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
-              <FaHeart className="text-gray-500 hover:text-red-500 transition duration-300 mr-1 cursor-pointer" />
-              <span>{likeCount}</span>
+            <FaHeart
+                className={`text-gray-500 hover:text-red-500 transition duration-300 mr-1 cursor-pointer ${
+                  likes.includes(user._id) ? 'text-red-500' : ''
+                }`}
+                onClick={handleLike}
+              />
+              <span>{likes.length}</span>
             </div>
             <div className="flex items-center">
               <FaComment className="text-gray-500 hover:text-blue-500 transition duration-300 mr-1 cursor-pointer" />
