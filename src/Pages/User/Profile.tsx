@@ -245,7 +245,6 @@ const Profile: FC = () => {
                         venue={event.venue}
                         ticketPrice={event.ticketPrice}
                         ticketsLeft={event.totalTickets}
-                        commentCount={0}
                         likeCount={event.likes}
                         image={event.image}
                         description={event.description}

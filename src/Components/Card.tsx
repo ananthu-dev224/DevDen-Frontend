@@ -17,6 +17,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { abortEvent, likeEvent } from "../services/event";
 import {toast} from 'sonner'
 import EditEventModal from "./EditEventModal";
+import CommentModal from "./CommentModal";
 interface CardProps {
   eventId: string;
   userProfileImage: string;
@@ -31,7 +32,6 @@ interface CardProps {
   ticketsLeft?: number;
   ticketPrice?: number;
   likeCount: any[];
-  commentCount: number;
   isProfile?:boolean;
   profileEventChange?: () => void;
 }
@@ -50,13 +50,13 @@ const Card: FC<CardProps> = ({
   ticketsLeft,
   ticketPrice,
   likeCount,
-  commentCount,
   isProfile,
   profileEventChange
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isReport, setReport] = useState(false);
   const [isEditModal,setEditModal] = useState(false);
+  const [isCommentModalOpen, setCommentModalOpen] = useState(false); 
   const [likes, setLikes] = useState(likeCount);
   const dispatch = useDispatch()
   const user = useSelector((store: any) => store.user.user);
@@ -197,8 +197,9 @@ const Card: FC<CardProps> = ({
               <span>{likes.length}</span>
             </div>
             <div className="flex items-center">
-              <FaComment className="text-gray-500 hover:text-blue-500 transition duration-300 mr-1 cursor-pointer" />
-              <span>{commentCount}</span>
+              <FaComment className="text-gray-500 hover:text-blue-500 transition duration-300 mr-1 cursor-pointer"
+              onClick={() => setCommentModalOpen(true)} 
+              />
             </div>
             <FaBookmark className="text-gray-500 hover:text-yellow-500 transition duration-300 cursor-pointer" />
           </div>
@@ -212,6 +213,11 @@ const Card: FC<CardProps> = ({
         isOpen={isReport}
         onRequestClose={() => setReport(false)}
       />
+      <CommentModal
+          eventId={eventId}
+          isOpen={isCommentModalOpen}
+          onRequestClose={() => setCommentModalOpen(false)}
+        />
       <EditEventModal profileEventChange={profileEventChange} showModal={isEditModal} closeModal={() => setEditModal(false)} initialEventData={initialEventData}/>
       </div>
     </div>
