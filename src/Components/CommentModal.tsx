@@ -49,12 +49,11 @@ const CommentModal: FC<CommentModalProps> = ({
       try {
         const commentData = {
           eventId,
-          userId: user._id,
           text: newComment,
         };
         const response = await addComment(commentData, dispatch);
         if (response.status === "success") {
-          toast.success("Comment Added successfully");
+          toast.success("Comment added successfully");
           setComments([response.newComment, ...comments]);
           setNewComment("");
         } else {
@@ -70,7 +69,7 @@ const CommentModal: FC<CommentModalProps> = ({
     try {
       const response = await deleteComment(commentId, dispatch);
       if (response.status === "success") {
-        toast.success("Comment Deleted successfully");
+        toast.success("Comment deleted successfully");
         setComments(comments.filter((comment) => comment._id !== commentId));
       }
     } catch (error) {
@@ -81,7 +80,6 @@ const CommentModal: FC<CommentModalProps> = ({
   const handleLike = async (commentId: string) => {
     try {
       const likeData = {
-        userId: user._id,
         commentId,
       };
       const response = await likeComment(likeData, dispatch);
@@ -129,26 +127,29 @@ const CommentModal: FC<CommentModalProps> = ({
       }`}
     >
       <div
-        className="fixed inset-0 bg-black opacity-50"
+        className="fixed inset-0 bg-black opacity-60"
         onClick={onRequestClose}
       ></div>
-      <div className="bg-white rounded-lg overflow-hidden shadow-lg w-11/12 max-w-lg mx-auto z-10">
+      <div className="bg-white rounded-lg overflow-hidden shadow-lg w-full max-w-lg mx-auto z-10 relative">
         <div className="flex justify-between items-center p-4 border-b">
           <h3 className="text-lg font-semibold">Comments</h3>
-          <FaTimes className="cursor-pointer" onClick={onRequestClose} />
+          <FaTimes
+            className="text-gray-600 cursor-pointer hover:text-gray-800 transition duration-150 text-sm"
+            onClick={onRequestClose}
+          />
         </div>
-        <div className="p-4 max-h-80 overflow-y-scroll">
-          <div className="mb-4">
+        <div className="p-4 max-h-80 overflow-y-auto">
+          <div className="flex items-center mb-4">
             <input
               type="text"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
+              className="w-full px-3 py-2 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Add a comment..."
             />
             <button
               onClick={handleAddComment}
-              className="mt-2 px-4 py-2 bg-gray-800 text-white rounded hover:bg-gray-900"
+              className="ml-3 px-4 py-2 bg-gray-900 text-white rounded-full hover:bg-gray-700 transition duration-150"
             >
               Post
             </button>
@@ -166,34 +167,25 @@ const CommentModal: FC<CommentModalProps> = ({
               return (
                 <div
                   key={comment._id}
-                  className="mb-2 relative ring-1 p-2 rounded-sm"
+                  className="mb-4 p-3 rounded-lg border border-gray-200 bg-gray-50 relative"
                 >
-                  <div className="flex items-center">
+                  <div className="flex items-center space-x-2">
                     <img
                       src={comment.userId.dp ? comment.userId.dp : pfp}
                       alt={comment.userId.username}
-                      className="w-8 h-8 rounded-full"
+                      className="w-10 h-10 rounded-full"
                     />
-                    <div className="ml-2">
+                    <div>
                       <span className="font-semibold">{username}</span>
                       <span className="block text-sm text-gray-500">
                         {postedTime}
                       </span>
                     </div>
-
-                      <div className="absolute top-2 right-2 flex space-x-2">
-                        <FaFlag
-                          className="text-gray-500 hover:text-gray-800 cursor-pointer"
-                          onClick={() => {
-                            //report logic
-                            
-                          }}
-                        />
-                  {user._id === comment.userId._id && (
-                        <FaTrash
-                          className="text-gray-500 hover:text-red-500 cursor-pointer"
-                          onClick={() => { 
-                            confirmAlert({
+                    {user._id === comment.userId._id && (
+                      <FaTrash
+                        className="absolute top-2 right-2 text-gray-500 hover:text-red-500 cursor-pointer transition duration-150 text-xs"
+                        onClick={() => {
+                          confirmAlert({
                             title: 'Confirm to Delete Comment',
                             message: 'Are you sure?',
                             buttons: [
@@ -209,30 +201,36 @@ const CommentModal: FC<CommentModalProps> = ({
                             ]
                           });
                         }}
-                        />
+                      />
                     )}
-                      </div>
                   </div>
-                  <p className="ml-10">{comment.text}</p>
-                  <div className="flex justify-end space-x-2 mt-2">
-                    <button className="flex items-center text-gray-500 hover:text-red-500 transition duration-300">
+                  <p className="mt-2 text-gray-800">{comment.text}</p>
+                  <div className="flex items-center justify-between mt-2 text-gray-500">
+                    <button
+                      className="flex items-center hover:text-red-500 transition duration-150"
+                      onClick={() => handleLike(comment._id)}
+                    >
                       <FaHeart
-                        className={`text-gray-500 hover:text-red-500 transition duration-300 mr-1 cursor-pointer ${
+                        className={`mr-1 ${
                           comment.likes.includes(user._id) ? "text-red-500" : ""
-                        }`}
-                        onClick={() => handleLike(comment._id)}
+                        } text-xs`}
                       />
                       <span>{comment.likes.length}</span>
                     </button>
-                    {/* <button className="flex items-center text-gray-500 hover:text-gray-800">
+                    <button className="flex items-center hover:text-gray-700 transition duration-150 text-xs">
+                      <FaFlag className="mr-1" />
+                      <span>Report</span>
+                    </button>
+                    <button className="flex items-center hover:text-blue-700 transition duration-150 text-xs">
                       <FaReply className="mr-1" />
-                    </button> */}
+                      <span>Reply</span>
+                    </button>
                   </div>
                 </div>
               );
             })
           ) : (
-            <p>No comments yet.</p>
+            <p className="text-gray-500 text-center">No comments yet.</p>
           )}
         </div>
       </div>

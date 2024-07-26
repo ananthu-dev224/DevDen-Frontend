@@ -66,7 +66,7 @@ const Home: FC = () => {
     if (filter === "free") {
       return event.isFree;
     }
-    if (filter === "ticketed") {
+    if (filter === "paid") {
       return !event.isFree;
     }
     return true;
@@ -95,12 +95,12 @@ const Home: FC = () => {
               Free
             </button>
             <button
-              onClick={() => handleFilterChange("ticketed")}
+              onClick={() => handleFilterChange("paid")}
               className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
-                filter === "ticketed" ? "bg-gray-800 text-white shadow-lg animate-pulse" : "bg-white text-gray-800 border border-gray-800"
+                filter === "paid" ? "bg-gray-800 text-white shadow-lg animate-pulse" : "bg-white text-gray-800 border border-gray-800"
               }`}
             >
-              Ticketed
+              Paid
             </button>
           </div>
         </div>

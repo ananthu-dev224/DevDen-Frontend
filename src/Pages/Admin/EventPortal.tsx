@@ -87,50 +87,61 @@ const EventPortal: FC = () => {
       <AdminNav />
       <div className="flex-1 p-4 md:p-10 ml-0 md:ml-72 overflow-auto">
         <div className="flex flex-col space-y-10 pb-20 md:pb-0">
-          {currentItems.map((event) => {
-            const createdAtDate = new Date(event.createdAt);
-            const postedTime = calculatePostedTime(createdAtDate);
-            return (
-              <div key={event._id} className="relative">
-                <Card
-                  eventId={event._id}
-                  date={event.date}
-                  postedTime={postedTime}
-                  time={event.time}
-                  isFree={event.isFree}
-                  userProfileImage={event.hostId.dp ? event.hostId.dp : ""}
-                  username={event.hostId.username}
-                  venue={event.venue}
-                  ticketPrice={event.ticketPrice}
-                  ticketsLeft={event.totalTickets}
-                  likeCount={event.likes}
-                  image={event.image}
-                  description={event.description}
-                />
-                   <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-center items-center">
-                     Make Event Live on DevDen : &nbsp; 
-                    <button
-                      onClick={() => handleApprove(event._id)}
-                      className="px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600"
-                    >
-                      Approve
-                    </button>
+          {currentItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <h1 className="text-xl font-semibold text-gray-700">No events available in the portal</h1>
+              <p className="text-gray-500 mt-2">It looks like there are no events to display at the moment.</p>
+            </div>
+          ) : (
+            <>
+              {currentItems.map((event) => {
+                const createdAtDate = new Date(event.createdAt);
+                const postedTime = calculatePostedTime(createdAtDate);
+                return (
+                  <div key={event._id} className="relative">
+                    <Card
+                      eventId={event._id}
+                      date={event.date}
+                      postedTime={postedTime}
+                      time={event.time}
+                      isFree={event.isFree}
+                      userProfileImage={event.hostId.dp ? event.hostId.dp : ""}
+                      username={event.hostId.username}
+                      venue={event.venue}
+                      ticketPrice={event.ticketPrice}
+                      ticketsLeft={event.totalTickets}
+                      likeCount={event.likes}
+                      image={event.image}
+                      description={event.description}
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-center items-center">
+                      Make Event Live on DevDen : &nbsp; 
+                      <button
+                        onClick={() => handleApprove(event._id)}
+                        className="px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600"
+                      >
+                        Approve
+                      </button>
+                    </div>
                   </div>
+                );
+              })}
+              <div className="flex justify-center mt-4">
+                {totalPages > 1 && (
+                  <Pagination
+                    layout="table"
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCurrentPage}
+                    showIcons={true}
+                    className="pagination"
+                    previousLabel="Previous"
+                    nextLabel="Next"
+                  />
+                )}
               </div>
-            );
-          })}
-          <div className="flex justify-center">
-            <Pagination
-              layout="table"
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-              showIcons={true}
-              className="pagination"
-              previousLabel="Previous"
-              nextLabel="Next"
-            />
-          </div>
+            </>
+          )}
         </div>
       </div>
     </div>

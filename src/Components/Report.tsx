@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
-const ReportModal = ({ isOpen, onRequestClose }) => {
-  const [selectedReportType, setSelectedReportType] = useState('');
+
+interface ReportModalProps {
+  isOpen: boolean;
+  onRequestClose: () => void;
+}
+
+const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose }) => {
+  const [selectedReportType, setSelectedReportType] = useState<string>('');
 
   if (!isOpen) return null;
 
-  const handleReportTypeChange = (type) => {
+  const handleReportTypeChange = (type: string) => {
     setSelectedReportType(type);
   };
 
   const handleSubmit = () => {
-    
+
     onRequestClose();
   };
 
@@ -22,9 +28,9 @@ const ReportModal = ({ isOpen, onRequestClose }) => {
           className="absolute top-1 right-3 text-2xl text-gray-500 hover:text-gray-700"
           onClick={onRequestClose}
         >
-        &times;
+          &times;
         </button>
-        <h2 className="text-xl  text-center font-semibold mb-4">Report Event</h2>
+        <h2 className="text-xl text-center font-semibold mb-4">Report Event</h2>
         <div className="flex flex-col">
           <label className="mb-2 font-medium">Select Report Type:</label>
           <select
@@ -35,9 +41,9 @@ const ReportModal = ({ isOpen, onRequestClose }) => {
             <option value="">Choose</option>
             <option value="spam">Spam</option>
             <option value="inappropriate">Inappropriate</option>
-            <option value="Misinformation">Misinformation</option>
-            <option value="Harassment">Harassment</option>
-            <option value="Other">Other</option>
+            <option value="misinformation">Misinformation</option>
+            <option value="harassment">Harassment</option>
+            <option value="other">Other</option>
           </select>
           <button
             className="bg-gray-800 text-white py-2 px-4 rounded hover:bg-gray-900"
@@ -51,7 +57,5 @@ const ReportModal = ({ isOpen, onRequestClose }) => {
     document.body
   );
 };
-
-
 
 export default ReportModal;

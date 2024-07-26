@@ -1,7 +1,9 @@
 import { FC, useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
+import { getUserDetails, getFollowers, getFollowing, follow, unfollow } from "../../services/network";
 import {
   FaCalendarAlt,
   FaLink,
@@ -11,57 +13,51 @@ import {
 } from "react-icons/fa";
 import header from "../../assets/header.jpg";
 import pfp from "../../assets/pfp.jpeg";
-import EditProfile from "../../Components/EditProfile";
-import ImageCropperModal from "../../Components/ImageCropper";
-import { toast } from "sonner";
 import Card from "../../Components/Card";
-import { getCreatedEvents } from "../../services/event";
-import { getFollowers, getFollowing } from "../../services/network";
 import ListNetwork from "../../Components/ListNetwork";
+import { toast } from "sonner";
 
-const Profile: FC = () => {
-  const [isEditProfileOpen, setEditProfileOpen] = useState(false);
-  const [isCropperOpen, setCropperOpen] = useState(false);
+const OtherProfile: FC = () => {
+    const { userId } = useParams<{ userId: string }>();
+  const [user, setUser] = useState<any>(null);
+  const [events, setEvents] = useState<any[]>([]);
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
   const [isListNetworkOpen, setListNetworkOpen] = useState(false);
   const [listNetworkType, setListNetworkType] = useState<'followers' | 'following'>('followers');
-  const [imageToCrop, setImageToCrop] = useState("");
-  const [events, setEvents] = useState<any[]>([]);
-  const [cropShape, setCropShape] = useState<"rectangular" | "circular">(
-    "rectangular"
-  );
-  const user = useSelector((state: any) => state.user.user);
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const activeUser = useSelector((store: any) => store.user.user);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const openEditProfile = () => setEditProfileOpen(true);
-  const closeEditProfile = () => setEditProfileOpen(false);
+  const fetchUserDetails = async () => {
+    if (!userId) {
+      toast.error("User not available, try again...");
+      return;
+    }
+    
+    if(userId === activeUser._id){
+        navigate('/profile')
+        return;
+    }
 
-  const openListNetwork = (type: 'followers' | 'following') => {
-    setListNetworkType(type);
-    setListNetworkOpen(true);
-  };
-
-  const closeListNetwork = () => setListNetworkOpen(false);
-
-  const fetchEvents = async () => {
     try {
-      const userId = user._id;
-      const response = await getCreatedEvents(userId, dispatch);
+      const response = await getUserDetails(userId, dispatch);
       if (response.status === "success") {
+        setUser(response.user);
         setEvents(response.events);
-      } else {
-        toast.error("Failed to fetch your events");
       }
     } catch (error) {
-      console.error("Error fetching events", error);
-      toast.error("An error occurred while fetching events");
+      console.error("Error fetching user details", error);
     }
   };
 
   const fetchFollowersAndFollowing = async () => {
+    if (!userId) {
+        toast.error("User not available, try again...");
+        return;
+    }
     try {
-      const userId = user._id;
       const followersResponse = await getFollowers(userId, dispatch);
       const followingResponse = await getFollowing(userId, dispatch);
   
@@ -76,33 +72,55 @@ const Profile: FC = () => {
       } else {
         toast.error("Failed to fetch following");
       }
+
+      // Check if the active user is following this profile
+      const isFollowing = followersResponse.followers.some((follower: any) => follower._id === activeUser._id);
+      setIsFollowing(isFollowing);
+
     } catch (error) {
       console.error("Error fetching followers and following", error);
     }
   };
-  
 
-  useEffect(() => {
-    fetchEvents();
-    fetchFollowersAndFollowing();
-  }, [Card]);
-
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageToCrop(reader.result as string);
-        setCropperOpen(true);
-        if (event.target.id === "profile-image-input") {
-          setCropShape("circular");
-        } else {
-          setCropShape("rectangular");
+ 
+  const handleFollowToggle = async () => {
+    if (!userId) {
+        toast.error("User not available, try again...");
+        return;
+    }
+    try {
+      if (isFollowing) {
+        const unfollowRes = await unfollow({followerId:userId}, dispatch);
+        if(unfollowRes.status === 'success'){
+            toast.success("Unfollowed successfully");
+            setFollowers(prev => prev.filter(follower => follower._id !== activeUser._id));
         }
-      };
-      reader.readAsDataURL(file);
+      } else {
+        const followRes = await follow({followerId:userId}, dispatch);
+        if(followRes.status === 'success'){
+            toast.success("Followed successfully");
+            setFollowers(prev => [...prev, activeUser]);
+        }
+      }
+      setIsFollowing(!isFollowing);
+    } catch (error) {
+      console.error("Error toggling follow", error);
+      toast.error("Failed to update follow status");
     }
   };
+
+  useEffect(() => {
+    fetchUserDetails();
+    fetchFollowersAndFollowing();
+  }, [userId]);
+
+  
+  const openListNetwork = (type: 'followers' | 'following') => {
+    setListNetworkType(type);
+    setListNetworkOpen(true);
+  };
+
+  const closeListNetwork = () => setListNetworkOpen(false);
 
   // Function to calculate "posted time" relative to current time
   const calculatePostedTime = (eventDate: Date): string => {
@@ -127,12 +145,7 @@ const Profile: FC = () => {
       return eventDate.toLocaleString();
     }
   };
-
-  const handleCropperClose = () => {
-    setCropperOpen(false);
-    setImageToCrop("");
-  };
-
+  
   return (
     <div className="flex bg-gray-200 min-h-screen">
       <Navbar />
@@ -142,48 +155,22 @@ const Profile: FC = () => {
             <img
               src={user?.banner || header}
               alt="Banner"
-              className="w-full max-h-60 object-cover rounded-sm hover:cursor-pointer"
-              onClick={() =>
-                document.getElementById("banner-image-input")?.click()
-              }
+              className="w-full max-h-60 object-cover rounded-sm"
             />
             <div className="absolute left-1/2 transform -translate-x-1/2 md:left-10 -bottom-14">
               <img
                 src={user?.dp || pfp}
                 alt="Profile"
-                className="w-28 h-28 rounded-full border-2 border-white hover:cursor-pointer"
-                onClick={() =>
-                  document.getElementById("profile-image-input")?.click()
-                }
+                className="w-28 h-28 rounded-full border-2 border-white"
               />
-              <label className="absolute bottom-2 right-2 cursor-pointer">
-                <FaCamera className="text-gray-500" />
-                <input
-                  type="file"
-                  id="profile-image-input"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageChange}
-                />
-              </label>
             </div>
-            <label className="absolute bottom-4 right-4 cursor-pointer">
-              <FaCamera className="text-gray-500" />
-              <input
-                type="file"
-                id="banner-image-input"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-              />
-            </label>
           </div>
           <div className="flex flex-col items-center md:items-start md:ml-40 mt-16 px-4 md:px-0">
             <h1 className="text-2xl font-semibold mt-4 sm:mt-0">
               @{user?.username}
             </h1>
             <div className="flex space-x-4 mt-2">
-              <span onClick={() => openListNetwork('followers')} className="cursor-pointer">
+            <span onClick={() => openListNetwork('followers')} className="cursor-pointer">
                 <strong>{followers.length}</strong> Followers
               </span>
               <span onClick={() => openListNetwork('following')} className="cursor-pointer">
@@ -193,12 +180,22 @@ const Profile: FC = () => {
                 <strong>{events?.length || 0}</strong> Events
               </span>
             </div>
+            <div>
             <button
               className="mt-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-full"
-              onClick={openEditProfile}
+              onClick={handleFollowToggle}
             >
-              Edit Profile
+              {isFollowing ? "Unfollow" : "Follow"}
             </button>
+            {isFollowing && (
+                <button
+                className="mt-2 ml-3 px-4 py-2 text-green-800 ring-1 ring-green-800 font-semibold rounded-full"
+                
+              >
+                Message
+              </button>
+            )}
+            </div>
           </div>
           <div className="px-4 md:px-0">
             <p className="text-center md:text-left font-bold mb-3">
@@ -208,7 +205,7 @@ const Profile: FC = () => {
               {user?.about || "Member of Devden community."}
             </p>
           </div>
-          <div className="flex flex-wrap justify-center md:justify-start space-x-6 text-gray-600  px-4 md:px-0">
+          <div className="flex flex-wrap justify-center md:justify-start space-x-6 text-gray-600 px-4 md:px-0">
             <div className="flex items-center space-x-2">
               <FaCalendarAlt className="w-5 h-5" />
               <span>
@@ -264,8 +261,7 @@ const Profile: FC = () => {
             </TabList>
             <TabPanels>
               <TabPanel>
-                {/*Created Events*/}
-                {events.map((event) => {
+                {events?.map((event: any) => {
                   const createdAtDate = new Date(event.createdAt);
                   const postedTime = calculatePostedTime(createdAtDate);
                   return (
@@ -285,19 +281,13 @@ const Profile: FC = () => {
                         likeCount={event.likes}
                         image={event.image}
                         description={event.description}
-                        isProfile={true}
-                        profileEventChange={fetchEvents}
+                        isProfile={false}
                       />
-                      {!event.isApproved && (
-                        <div className="p-3 flex justify-center items-center bg-blue-500 text-white font-semibold rounded-b-lg">
-                        This Event will go live until admin approve!
-                      </div>
-                      )}
                     </div>
                   );
                 })}
               </TabPanel>
-              <TabPanel>{/* Saved Events*/}</TabPanel>
+              <TabPanel>{/* Saved Events */}</TabPanel>
             </TabPanels>
           </TabGroup>
         </div>
@@ -307,16 +297,9 @@ const Profile: FC = () => {
           followers={listNetworkType === 'followers' ? followers : []}
           following={listNetworkType === 'following' ? following : []}
         />
-        <EditProfile isOpen={isEditProfileOpen} onClose={closeEditProfile} />
-        <ImageCropperModal
-          isOpen={isCropperOpen}
-          onClose={handleCropperClose}
-          imageSrc={imageToCrop}
-          cropShape={cropShape}
-        />
       </div>
     </div>
   );
 };
 
-export default Profile;
+export default OtherProfile;

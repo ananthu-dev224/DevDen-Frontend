@@ -18,6 +18,7 @@ import { abortEvent, likeEvent } from "../services/event";
 import {toast} from 'sonner'
 import EditEventModal from "./EditEventModal";
 import CommentModal from "./CommentModal";
+import BuyTicketModal from "./BuyTicket";
 interface CardProps {
   eventId: string;
   userProfileImage: string;
@@ -57,6 +58,7 @@ const Card: FC<CardProps> = ({
   const [isReport, setReport] = useState(false);
   const [isEditModal,setEditModal] = useState(false);
   const [isCommentModalOpen, setCommentModalOpen] = useState(false); 
+  const [isBuyTicketsModalOpen, setBuyTicketsModalOpen] = useState(false);  
   const [likes, setLikes] = useState(likeCount);
   const dispatch = useDispatch()
   const user = useSelector((store: any) => store.user.user);
@@ -80,7 +82,6 @@ const Card: FC<CardProps> = ({
 
   const handleLike = async () => {
      const likeData = {
-       userId:user._id,
        eventId
      }
 
@@ -182,7 +183,7 @@ const Card: FC<CardProps> = ({
         </div>
         {ticketPrice && !isFree && (
           <div className="flex justify-end text-gray-600 mb-4">
-            <span>&#8377;{ticketPrice} per ticket</span>
+            <span>${ticketPrice} per ticket</span>
           </div>
         )}
         <div className="flex justify-between items-center mt-7">
@@ -190,7 +191,7 @@ const Card: FC<CardProps> = ({
             <div className="flex items-center">
             <FaHeart
                 className={`text-gray-500 hover:text-red-500 transition duration-300 mr-1 cursor-pointer ${
-                  likes.includes(user._id) ? 'text-red-500' : ''
+                  user && likes.includes(user._id) ? 'text-red-500' : ''
                 }`}
                 onClick={handleLike}
               />
@@ -204,7 +205,9 @@ const Card: FC<CardProps> = ({
             <FaBookmark className="text-gray-500 hover:text-yellow-500 transition duration-300 cursor-pointer" />
           </div>
           {ticketPrice && !isFree && (
-            <button className="text-white text-sm font-medium py-2 px-4 rounded  bg-indigo-600 hover:bg-indigo-700 transition duration-300">
+            <button className="text-white text-sm font-medium py-2 px-4 rounded  bg-indigo-600 hover:bg-indigo-700 transition duration-300"
+            onClick={() => setBuyTicketsModalOpen(true)} 
+            >
               Buy Ticket
             </button>
           )}
@@ -217,6 +220,11 @@ const Card: FC<CardProps> = ({
           eventId={eventId}
           isOpen={isCommentModalOpen}
           onRequestClose={() => setCommentModalOpen(false)}
+        />
+         <BuyTicketModal
+          isOpen={isBuyTicketsModalOpen}
+          onRequestClose={() => setBuyTicketsModalOpen(false)}
+          ticketPrice={ticketPrice || 0}
         />
       <EditEventModal profileEventChange={profileEventChange} showModal={isEditModal} closeModal={() => setEditModal(false)} initialEventData={initialEventData}/>
       </div>

@@ -5,7 +5,7 @@ import { userLogout } from "../redux/reducers/userSlice";
 // Services of comments in event 
 
 // Add comment : /user/add-comment
-export const addComment = async (commentData: {eventId:string,userId:string,text:string},dispatch:any): Promise<any> => {
+export const addComment = async (commentData: {eventId:string,text:string},dispatch:any): Promise<any> => {
   try {
     const response = await api.post("/user/add-comment", commentData);
     return response.data;
@@ -71,7 +71,7 @@ export const deleteComment = async (commentId:string,dispatch:any): Promise<any>
 };
 
 // Like comment : /user/like-comment
-export const likeComment = async (likeData: {userId:string,commentId:string},dispatch:any): Promise<any> => {
+export const likeComment = async (likeData: {commentId:string},dispatch:any): Promise<any> => {
     try {
       const response = await api.post("/user/like-comment", likeData);
       return response.data;
