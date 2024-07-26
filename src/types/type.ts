@@ -36,6 +36,19 @@ export interface gData {
   token: string;
 }
 
+export interface eventData {
+  hostId:String,
+  image:String,
+  description:String,
+  date:String,
+  time:String,
+  venue:String,
+  isFree:Boolean,
+  totalTickets?:Number,
+  ticketPrice?:Number,
+  eventId?:String
+}
+
 export interface ImageCropperModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -154,3 +167,11 @@ export interface IconProps {
   fn?: () => void;
 }
 
+export interface DropdownProps {
+  onReport?: () => void;
+  onClose: () => void;
+  onEdit?: () => void;
+  onAbort?: () => void;
+  onDetails?: () => void;
+  isProfile?: boolean;
+}

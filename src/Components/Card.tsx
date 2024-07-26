@@ -1,25 +1,235 @@
-import { FC } from "react";
-
+import { FC , useState} from "react";
+import pfp from '../assets/pfp.jpeg'
+import ReportModal from "./Report";
+import {
+  FaEllipsisV,
+  FaHeart,
+  FaComment,
+  FaBookmark,
+  FaTicketAlt,
+  FaCalendarAlt,
+  FaClock,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
+import DotDropdown from "./DotDropdown";
+import { confirmAlert } from 'react-confirm-alert';
+import { useDispatch, useSelector } from "react-redux";
+import { abortEvent, likeEvent } from "../services/event";
+import {toast} from 'sonner'
+import EditEventModal from "./EditEventModal";
+import CommentModal from "./CommentModal";
+import BuyTicketModal from "./BuyTicket";
 interface CardProps {
+  eventId: string;
+  userProfileImage: string;
+  username: string;
+  postedTime: string;
   image: string;
-  title: string;
   description: string;
+  date: string;
+  time: string;
+  venue: string;
+  isFree: boolean;
+  ticketsLeft?: number;
+  ticketPrice?: number;
+  likeCount: any[];
+  isProfile?:boolean;
+  profileEventChange?: () => void;
 }
 
-const Card: FC<CardProps> = ({ image, title, description }) => {
+const Card: FC<CardProps> = ({
+  eventId,
+  userProfileImage,
+  username,
+  postedTime,
+  image,
+  description,
+  date,
+  time,
+  venue,
+  isFree,
+  ticketsLeft,
+  ticketPrice,
+  likeCount,
+  isProfile,
+  profileEventChange
+}) => {
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [isReport, setReport] = useState(false);
+  const [isEditModal,setEditModal] = useState(false);
+  const [isCommentModalOpen, setCommentModalOpen] = useState(false); 
+  const [isBuyTicketsModalOpen, setBuyTicketsModalOpen] = useState(false);  
+  const [likes, setLikes] = useState(likeCount);
+  const dispatch = useDispatch()
+  const user = useSelector((store: any) => store.user.user);
+
+  const initialEventData = {
+    eventId,
+    image,
+    description,
+    date,
+    time,
+    venue,
+    isFree,
+    totalTickets: ticketsLeft || 0,
+    ticketPrice: ticketPrice || 0,
+  };
+
+  const openReportModal = () => {
+    setReport(true);
+    setDropdownOpen(false);
+  };
+
+  const handleLike = async () => {
+     const likeData = {
+       eventId
+     }
+
+    const result = await likeEvent(likeData, dispatch);
+    if (result.status === 'success') {
+      if (likes.includes(user._id)) {
+        setLikes(likes.filter((id: string) => id !== user._id));
+      } else {
+        setLikes([...likes, user._id]);
+      }
+    }
+
+  }
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <img src={image} alt={title} className="w-full h-48 object-cover" />
+      <div className="flex items-center justify-between p-4">
+        <div className="flex items-center">
+          <img
+            src={userProfileImage ? userProfileImage : pfp}
+            alt={username}
+            className="w-10 h-10 rounded-full"
+          />
+          <div className="ml-2">
+            <span className="font-semibold">{username}</span>
+            <span className="block text-sm text-gray-500">{postedTime}</span>
+          </div>
+        </div>
+        <FaEllipsisV className="text-gray-500 cursor-pointer" onClick={() => setDropdownOpen(prev => !prev)} />
+        {isDropdownOpen && !isProfile && (
+            <DotDropdown
+              onReport={openReportModal}
+              onClose={() => setDropdownOpen(false)}
+            />
+          )}
+          {isDropdownOpen && isProfile && (
+            <DotDropdown
+              isProfile={true}
+              onAbort={() => {
+                confirmAlert({
+                  title: 'Confirm to Abort the Event',
+                  message: 'This Action cant be undone , if the event has tickets then all the tickets will be refunded!',
+                  buttons: [
+                    {
+                      label: 'Yes',
+                      onClick: async() => {
+                          const result = await abortEvent(eventId,dispatch)
+                          if(result.status === 'success'){
+                            if(profileEventChange){
+                              profileEventChange();
+                            }
+                            toast.success("Event aborted successfully.")
+                          }
+                      }
+                    },
+                    {
+                      label: 'No',
+                    }
+                  ]
+                });
+              }}
+              onDetails={() => {
+                // Logic for showing details
+              }}
+              onEdit={() => {
+                setEditModal(true)
+              }}
+              onClose={() => setDropdownOpen(false)}
+            />
+          )}
+      </div>
+      <div className="w-full h-auto">
+        <img src={image} alt="Event" className="w-full h-full object-cover" />
+      </div>
       <div className="p-4">
-        <h3 className="text-lg font-semibold mb-2">{title}</h3>
         <p className="text-gray-700 mb-4">{description}</p>
-        <button className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition duration-300">
-          Learn More
-        </button>
+        <div className="flex justify-between text-gray-600 mb-2">
+          <div className="flex items-center">
+            <FaCalendarAlt className="mr-2" />
+            <span>{date}</span>
+          </div>
+          <div className="flex items-center">
+            <FaClock className="mr-2 animate-rotate" />
+            <span>{time}</span>
+          </div>
+        </div>
+        <div className="flex justify-between text-gray-600 mb-2">
+          <div className="flex items-center">
+            <FaMapMarkerAlt className="mr-2" />
+            <span>{venue}</span>
+          </div>
+          {isFree ? (
+            <span>Free</span>
+          ) : (
+            <div className="flex items-center">
+              <FaTicketAlt className="mr-2 text-green-500" />
+              <span>{ticketsLeft} Left</span>
+            </div>
+          )}
+        </div>
+        {ticketPrice && !isFree && (
+          <div className="flex justify-end text-gray-600 mb-4">
+            <span>${ticketPrice} per ticket</span>
+          </div>
+        )}
+        <div className="flex justify-between items-center mt-7">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+            <FaHeart
+                className={`text-gray-500 hover:text-red-500 transition duration-300 mr-1 cursor-pointer ${
+                  user && likes.includes(user._id) ? 'text-red-500' : ''
+                }`}
+                onClick={handleLike}
+              />
+              <span>{likes.length}</span>
+            </div>
+            <div className="flex items-center">
+              <FaComment className="text-gray-500 hover:text-blue-500 transition duration-300 mr-1 cursor-pointer"
+              onClick={() => setCommentModalOpen(true)} 
+              />
+            </div>
+            <FaBookmark className="text-gray-500 hover:text-yellow-500 transition duration-300 cursor-pointer" />
+          </div>
+          {ticketPrice && !isFree && (
+            <button className="text-white text-sm font-medium py-2 px-4 rounded  bg-indigo-600 hover:bg-indigo-700 transition duration-300"
+            onClick={() => setBuyTicketsModalOpen(true)} 
+            >
+              Buy Ticket
+            </button>
+          )}
+        </div>
+        <ReportModal
+        isOpen={isReport}
+        onRequestClose={() => setReport(false)}
+      />
+      <CommentModal
+          eventId={eventId}
+          isOpen={isCommentModalOpen}
+          onRequestClose={() => setCommentModalOpen(false)}
+        />
+         <BuyTicketModal
+          isOpen={isBuyTicketsModalOpen}
+          onRequestClose={() => setBuyTicketsModalOpen(false)}
+          ticketPrice={ticketPrice || 0}
+        />
+      <EditEventModal profileEventChange={profileEventChange} showModal={isEditModal} closeModal={() => setEditModal(false)} initialEventData={initialEventData}/>
       </div>
     </div>
   );
 };
-
 
 export default Card;
