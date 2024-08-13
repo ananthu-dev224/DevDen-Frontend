@@ -125,7 +125,7 @@ const Card: FC<CardProps> = ({
                             if(profileEventChange){
                               profileEventChange();
                             }
-                            toast.success("Event aborted successfully.")
+                            toast.success(result.message)
                           }
                       }
                     },

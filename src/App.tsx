@@ -24,6 +24,7 @@ import PaymentFail from "./Pages/User/PaymentFail";
 import PaymentSuccess from "./Pages/User/PaymentSuccess";
 import Tickets from "./Pages/User/Tickets";
 import Page404 from "./Pages/Page404";
+import VerifyQR from "./Pages/User/VerifyQR";
 // Protected
 import AdminProtected from "./routes/adminProtected";
 import UserProtected from "./routes/userProtected";
@@ -46,6 +47,7 @@ const App: FC = () => {
               <Route path="/payment-success" element={<UserProtected><PaymentSuccess /></UserProtected>} />
               <Route path="/payment-failure" element={<UserProtected><PaymentFail /></UserProtected>} />
               <Route path="/my-tickets" element={<UserProtected><Tickets /></UserProtected>} />
+              <Route path="/ticket-status/:ticketId" element={<UserProtected><VerifyQR /></UserProtected>} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password/:token" element={<ResetPass />} />
@@ -60,7 +62,6 @@ const App: FC = () => {
     </>
   );
 };
-
 
 
 export default App;
