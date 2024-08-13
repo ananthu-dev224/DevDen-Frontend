@@ -2,12 +2,8 @@
 import React, { useState, useCallback, FC } from "react";
 import Cropper from "react-easy-crop";
 import { Area } from "react-easy-crop/types";
+import { EventCropProps } from "../types/type";
 
-interface EventCropProps {
-  imageSrc: string;
-  onCropComplete: (croppedImage: string, imageBlob: Blob) => void;
-  onClose: () => void;
-}
 
 const EventCrop: FC<EventCropProps> = ({ imageSrc, onCropComplete, onClose }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });

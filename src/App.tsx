@@ -20,6 +20,9 @@ import OtherProfile from "./Pages/User/OtherProfile";
 import CreateEvent from "./Pages/User/CreateEvent";
 import Explore from "./Pages/User/Explore";
 import { ResetPass } from "./Pages/User/ResetPass";
+import PaymentFail from "./Pages/User/PaymentFail";
+import PaymentSuccess from "./Pages/User/PaymentSuccess";
+import Tickets from "./Pages/User/Tickets";
 import Page404 from "./Pages/Page404";
 // Protected
 import AdminProtected from "./routes/adminProtected";
@@ -40,6 +43,9 @@ const App: FC = () => {
               <Route path="/profile/:userId" element={<UserProtected><OtherProfile /></UserProtected>} />
               <Route path="/create-event" element={<UserProtected><CreateEvent /></UserProtected>} />
               <Route path="/explore" element={<UserProtected><Explore /></UserProtected>} />
+              <Route path="/payment-success" element={<UserProtected><PaymentSuccess /></UserProtected>} />
+              <Route path="/payment-failure" element={<UserProtected><PaymentFail /></UserProtected>} />
+              <Route path="/my-tickets" element={<UserProtected><Tickets /></UserProtected>} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password/:token" element={<ResetPass />} />

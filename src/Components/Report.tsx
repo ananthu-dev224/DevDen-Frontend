@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import { ReportModalProps } from '../types/type';
 
 
-interface ReportModalProps {
-  isOpen: boolean;
-  onRequestClose: () => void;
-}
 
 const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose }) => {
   const [selectedReportType, setSelectedReportType] = useState<string>('');

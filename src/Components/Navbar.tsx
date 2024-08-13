@@ -14,12 +14,8 @@ import {toast} from 'sonner'
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { userLogout } from "../redux/reducers/userSlice";
+import { NavItemProps } from "../types/type";
 
-interface NavItemProps {
-  icon: JSX.Element;
-  text?: string;
-  handleClick?: () => void;
-}
 
 const Navbar: FC = (): ReactElement => {
   const navigate = useNavigate()

@@ -1,6 +1,8 @@
 import { FC , useState} from "react";
 import pfp from '../assets/pfp.jpeg'
 import ReportModal from "./Report";
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import {
   FaEllipsisV,
   FaHeart,
@@ -15,27 +17,14 @@ import DotDropdown from "./DotDropdown";
 import { confirmAlert } from 'react-confirm-alert';
 import { useDispatch, useSelector } from "react-redux";
 import { abortEvent, likeEvent } from "../services/event";
+import { eventDetails } from "../services/ticket";
 import {toast} from 'sonner'
 import EditEventModal from "./EditEventModal";
 import CommentModal from "./CommentModal";
 import BuyTicketModal from "./BuyTicket";
-interface CardProps {
-  eventId: string;
-  userProfileImage: string;
-  username: string;
-  postedTime: string;
-  image: string;
-  description: string;
-  date: string;
-  time: string;
-  venue: string;
-  isFree: boolean;
-  ticketsLeft?: number;
-  ticketPrice?: number;
-  likeCount: any[];
-  isProfile?:boolean;
-  profileEventChange?: () => void;
-}
+import { CardProps } from "../types/type";
+import EventDetailsModal from "./EventDetails";
+
 
 const Card: FC<CardProps> = ({
   eventId,
@@ -58,6 +47,8 @@ const Card: FC<CardProps> = ({
   const [isReport, setReport] = useState(false);
   const [isEditModal,setEditModal] = useState(false);
   const [isCommentModalOpen, setCommentModalOpen] = useState(false); 
+  const [showDetails, setshowDetails] = useState(false); 
+  const [details,setDetails] = useState(["free"]);
   const [isBuyTicketsModalOpen, setBuyTicketsModalOpen] = useState(false);  
   const [likes, setLikes] = useState(likeCount);
   const dispatch = useDispatch()
@@ -74,6 +65,8 @@ const Card: FC<CardProps> = ({
     totalTickets: ticketsLeft || 0,
     ticketPrice: ticketPrice || 0,
   };
+
+  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_API_KEY)
 
   const openReportModal = () => {
     setReport(true);
@@ -142,8 +135,12 @@ const Card: FC<CardProps> = ({
                   ]
                 });
               }}
-              onDetails={() => {
-                // Logic for showing details
+              onDetails={async () => {
+                if (!isFree) {
+                  const result = await eventDetails(eventId, dispatch);
+                  setDetails(result.details);
+                }
+                setshowDetails(true);
               }}
               onEdit={() => {
                 setEditModal(true)
@@ -182,7 +179,7 @@ const Card: FC<CardProps> = ({
           )}
         </div>
         {ticketPrice && !isFree && (
-          <div className="flex justify-end text-gray-600 mb-4">
+          <div className="flex justify-end text-green-600 font-semibold mb-4">
             <span>${ticketPrice} per ticket</span>
           </div>
         )}
@@ -221,11 +218,16 @@ const Card: FC<CardProps> = ({
           isOpen={isCommentModalOpen}
           onRequestClose={() => setCommentModalOpen(false)}
         />
+        <EventDetailsModal eventTickets={details} isOpen={showDetails} onRequestClose={() => setshowDetails(false)}/>
+        <Elements stripe={stripePromise}>
          <BuyTicketModal
           isOpen={isBuyTicketsModalOpen}
           onRequestClose={() => setBuyTicketsModalOpen(false)}
           ticketPrice={ticketPrice || 0}
+          eventImg={image}
+          eventId={eventId}
         />
+        </Elements>
       <EditEventModal profileEventChange={profileEventChange} showModal={isEditModal} closeModal={() => setEditModal(false)} initialEventData={initialEventData}/>
       </div>
     </div>

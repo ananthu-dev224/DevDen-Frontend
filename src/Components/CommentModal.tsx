@@ -5,12 +5,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { toast } from "sonner";
 import { confirmAlert } from 'react-confirm-alert';
 import pfp from "../assets/pfp.jpeg";
+import { calculatePostedTime } from "../utils/postedTime";
+import { CommentModalProps } from "../types/type";
 
-interface CommentModalProps {
-  eventId: string;
-  isOpen: boolean;
-  onRequestClose: () => void;
-}
 
 const CommentModal: FC<CommentModalProps> = ({
   eventId,
@@ -99,26 +96,6 @@ const CommentModal: FC<CommentModalProps> = ({
     }
   };
 
-  const calculatePostedTime = (commentDate: Date): string => {
-    const currentDateTime = new Date();
-    const diffMs = currentDateTime.getTime() - commentDate.getTime();
-    const diffMinutes = Math.round(diffMs / (1000 * 60));
-
-    if (diffMinutes < 1) {
-      return "Now";
-    } else if (diffMinutes === 1) {
-      return "1 minute ago";
-    } else if (diffMinutes < 60) {
-      return `${diffMinutes} minutes ago`;
-    } else if (diffMinutes < 120) {
-      return "1 hour ago";
-    } else if (diffMinutes < 1440) {
-      const diffHours = Math.floor(diffMinutes / 60);
-      return `${diffHours} hours ago`;
-    } else {
-      return commentDate.toLocaleString();
-    }
-  };
 
   return (
     <div

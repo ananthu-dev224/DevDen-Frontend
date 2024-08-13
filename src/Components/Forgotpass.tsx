@@ -4,11 +4,8 @@ import { IoClose } from "react-icons/io5";
 import { toast } from "react-toastify";
 import { forgotPassword } from "../services/userAuth";
 import ScaleLoader from 'react-spinners/ScaleLoader';
+import { ForgotPassProps } from "../types/type";
 
-interface ForgotPassProps {
-  isOpen: boolean;
-  onRequestClose: () => void;
-}
 
 const override: CSSProperties = {
   display: "block",

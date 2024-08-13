@@ -11,12 +11,8 @@ import {toast} from 'sonner'
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { adminLogout } from "../redux/reducers/adminSlice";
+import { NavItemProps } from "../types/type";
 
-interface NavItemProps {
-  icon: JSX.Element;
-  text?: string;
-  to?: string;
-}
 
 const AdminNav: FC = (): ReactElement => {
   const admin = useSelector((state:any) => state.admin.admin)

@@ -6,23 +6,7 @@ import axios from "axios";
 import { generateSign } from '../services/profile';
 import { updateEvent } from '../services/event';
 import EventCrop from './EventCrop';
-
-interface EditEventModalProps {
-  showModal: boolean;
-  closeModal: () => void;
-  profileEventChange?: () => void;
-  initialEventData: {
-    eventId: string;
-    description: string;
-    image: string;
-    date: string;
-    time: string;
-    venue: string;
-    isFree: boolean;
-    totalTickets?: number;
-    ticketPrice?: number;
-  };
-}
+import { EditEventModalProps } from '../types/type';
 
 const override: CSSProperties = {
   display: "block",

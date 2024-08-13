@@ -1,5 +1,6 @@
 import { FC, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import {
@@ -18,6 +19,7 @@ import Card from "../../Components/Card";
 import { getCreatedEvents } from "../../services/event";
 import { getFollowers, getFollowing } from "../../services/network";
 import ListNetwork from "../../Components/ListNetwork";
+import { calculatePostedTime } from "../../utils/postedTime";
 
 const Profile: FC = () => {
   const [isEditProfileOpen, setEditProfileOpen] = useState(false);
@@ -28,6 +30,7 @@ const Profile: FC = () => {
   const [listNetworkType, setListNetworkType] = useState<'followers' | 'following'>('followers');
   const [imageToCrop, setImageToCrop] = useState("");
   const [events, setEvents] = useState<any[]>([]);
+  const navigate = useNavigate()
   const [cropShape, setCropShape] = useState<"rectangular" | "circular">(
     "rectangular"
   );
@@ -104,29 +107,7 @@ const Profile: FC = () => {
     }
   };
 
-  // Function to calculate "posted time" relative to current time
-  const calculatePostedTime = (eventDate: Date): string => {
-    const currentDateTime = new Date();
-    const diffMs = currentDateTime.getTime() - eventDate.getTime();
 
-    // Convert milliseconds to minutes
-    const diffMinutes = Math.round(diffMs / (1000 * 60));
-
-    if (diffMinutes < 1) {
-      return "Now";
-    } else if (diffMinutes === 1) {
-      return "1 minute ago";
-    } else if (diffMinutes < 60) {
-      return `${diffMinutes} minutes ago`;
-    } else if (diffMinutes < 120) {
-      return "1 hour ago";
-    } else if (diffMinutes < 1440) {
-      const diffHours = Math.floor(diffMinutes / 60);
-      return `${diffHours} hours ago`;
-    } else {
-      return eventDate.toLocaleString();
-    }
-  };
 
   const handleCropperClose = () => {
     setCropperOpen(false);
@@ -193,12 +174,20 @@ const Profile: FC = () => {
                 <strong>{events?.length || 0}</strong> Events
               </span>
             </div>
+            <div>
             <button
               className="mt-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-full"
               onClick={openEditProfile}
             >
               Edit Profile
             </button>
+            <button
+              className="mt-2 ml-2  px-4 py-2 bg-gray-300 text-black font-semibold rounded-full"
+              onClick={() => navigate('/my-tickets')}
+            >
+              My tickets
+            </button>
+            </div>
           </div>
           <div className="px-4 md:px-0">
             <p className="text-center md:text-left font-bold mb-3">
