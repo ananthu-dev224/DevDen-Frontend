@@ -206,6 +206,7 @@ export interface CardProps {
   likeCount: any[];
   isProfile?:boolean;
   profileEventChange?: () => void;
+  fetchSaved?: () => void;
 }
 
 export interface CommentModalProps {

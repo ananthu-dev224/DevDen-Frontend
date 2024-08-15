@@ -1,5 +1,5 @@
-import { FC , useState} from "react";
-import pfp from '../assets/pfp.jpeg'
+import { FC, useState, useEffect } from "react";
+import pfp from "../assets/pfp.jpeg";
 import ReportModal from "./Report";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
@@ -14,17 +14,16 @@ import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 import DotDropdown from "./DotDropdown";
-import { confirmAlert } from 'react-confirm-alert';
+import { confirmAlert } from "react-confirm-alert";
 import { useDispatch, useSelector } from "react-redux";
-import { abortEvent, likeEvent } from "../services/event";
+import { abortEvent, likeEvent, saveEvent, checkSaved } from "../services/event";
 import { eventDetails } from "../services/ticket";
-import {toast} from 'sonner'
+import { toast } from "sonner";
 import EditEventModal from "./EditEventModal";
 import CommentModal from "./CommentModal";
 import BuyTicketModal from "./BuyTicket";
 import { CardProps } from "../types/type";
 import EventDetailsModal from "./EventDetails";
-
 
 const Card: FC<CardProps> = ({
   eventId,
@@ -41,17 +40,19 @@ const Card: FC<CardProps> = ({
   ticketPrice,
   likeCount,
   isProfile,
-  profileEventChange
+  profileEventChange,
+  fetchSaved
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isReport, setReport] = useState(false);
-  const [isEditModal,setEditModal] = useState(false);
-  const [isCommentModalOpen, setCommentModalOpen] = useState(false); 
-  const [showDetails, setshowDetails] = useState(false); 
-  const [details,setDetails] = useState(["free"]);
-  const [isBuyTicketsModalOpen, setBuyTicketsModalOpen] = useState(false);  
+  const [isEditModal, setEditModal] = useState(false);
+  const [isCommentModalOpen, setCommentModalOpen] = useState(false);
+  const [showDetails, setshowDetails] = useState(false);
+  const [details, setDetails] = useState(["free"]);
+  const [isBuyTicketsModalOpen, setBuyTicketsModalOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [likes, setLikes] = useState(likeCount);
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);
 
   const initialEventData = {
@@ -66,7 +67,18 @@ const Card: FC<CardProps> = ({
     ticketPrice: ticketPrice || 0,
   };
 
-  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_API_KEY)
+  useEffect(() => {
+    const checkIfSaved = async () => {
+      const result = await checkSaved(eventId,dispatch);
+      if (result.status === 'success') {
+        setIsSaved(result.isSaved);
+      }
+    };
+  
+    checkIfSaved();
+  }, [eventId, user._id, dispatch]);
+
+  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_API_KEY);
 
   const openReportModal = () => {
     setReport(true);
@@ -74,20 +86,34 @@ const Card: FC<CardProps> = ({
   };
 
   const handleLike = async () => {
-     const likeData = {
-       eventId
-     }
+    const likeData = {
+      eventId,
+    };
 
     const result = await likeEvent(likeData, dispatch);
-    if (result.status === 'success') {
+    if (result.status === "success") {
       if (likes.includes(user._id)) {
         setLikes(likes.filter((id: string) => id !== user._id));
       } else {
         setLikes([...likes, user._id]);
       }
     }
+  };
 
-  }
+  const handleSave = async () => {
+    const saveData = {
+      eventId,
+    };
+
+    const result = await saveEvent(saveData, dispatch);
+    if (result.status === "success") {
+      setIsSaved(!isSaved);
+      if (fetchSaved) {
+        fetchSaved();
+      }
+      toast.success(isSaved ? "Event unsaved" : "Event saved");
+    }
+  };
   return (
     <div className="bg-white shadow-md rounded-lg overflow-hidden">
       <div className="flex items-center justify-between p-4">
@@ -102,52 +128,56 @@ const Card: FC<CardProps> = ({
             <span className="block text-sm text-gray-500">{postedTime}</span>
           </div>
         </div>
-        <FaEllipsisV className="text-gray-500 cursor-pointer" onClick={() => setDropdownOpen(prev => !prev)} />
+        <FaEllipsisV
+          className="text-gray-500 cursor-pointer"
+          onClick={() => setDropdownOpen((prev) => !prev)}
+        />
         {isDropdownOpen && !isProfile && (
-            <DotDropdown
-              onReport={openReportModal}
-              onClose={() => setDropdownOpen(false)}
-            />
-          )}
-          {isDropdownOpen && isProfile && (
-            <DotDropdown
-              isProfile={true}
-              onAbort={() => {
-                confirmAlert({
-                  title: 'Confirm to Abort the Event',
-                  message: 'This Action cant be undone , if the event has tickets then all the tickets will be refunded!',
-                  buttons: [
-                    {
-                      label: 'Yes',
-                      onClick: async() => {
-                          const result = await abortEvent(eventId,dispatch)
-                          if(result.status === 'success'){
-                            if(profileEventChange){
-                              profileEventChange();
-                            }
-                            toast.success(result.message)
-                          }
+          <DotDropdown
+            onReport={openReportModal}
+            onClose={() => setDropdownOpen(false)}
+          />
+        )}
+        {isDropdownOpen && isProfile && (
+          <DotDropdown
+            isProfile={true}
+            onAbort={() => {
+              confirmAlert({
+                title: "Confirm to Abort the Event",
+                message:
+                  "This Action cant be undone , if the event has tickets then all the tickets will be refunded!",
+                buttons: [
+                  {
+                    label: "Yes",
+                    onClick: async () => {
+                      const result = await abortEvent(eventId, dispatch);
+                      if (result.status === "success") {
+                        if (profileEventChange) {
+                          profileEventChange();
+                        }
+                        toast.success(result.message);
                       }
                     },
-                    {
-                      label: 'No',
-                    }
-                  ]
-                });
-              }}
-              onDetails={async () => {
-                if (!isFree) {
-                  const result = await eventDetails(eventId, dispatch);
-                  setDetails(result.details);
-                }
-                setshowDetails(true);
-              }}
-              onEdit={() => {
-                setEditModal(true)
-              }}
-              onClose={() => setDropdownOpen(false)}
-            />
-          )}
+                  },
+                  {
+                    label: "No",
+                  },
+                ],
+              });
+            }}
+            onDetails={async () => {
+              if (!isFree) {
+                const result = await eventDetails(eventId, dispatch);
+                setDetails(result.details);
+              }
+              setshowDetails(true);
+            }}
+            onEdit={() => {
+              setEditModal(true);
+            }}
+            onClose={() => setDropdownOpen(false)}
+          />
+        )}
       </div>
       <div className="w-full h-auto">
         <img src={image} alt="Event" className="w-full h-full object-cover" />
@@ -186,49 +216,65 @@ const Card: FC<CardProps> = ({
         <div className="flex justify-between items-center mt-7">
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
-            <FaHeart
+              <FaHeart
                 className={`text-gray-500 hover:text-red-500 transition duration-300 mr-1 cursor-pointer ${
-                  user && likes.includes(user._id) ? 'text-red-500' : ''
+                  user && likes.includes(user._id) ? "text-red-500" : ""
                 }`}
                 onClick={handleLike}
               />
               <span>{likes.length}</span>
             </div>
             <div className="flex items-center">
-              <FaComment className="text-gray-500 hover:text-blue-500 transition duration-300 mr-1 cursor-pointer"
-              onClick={() => setCommentModalOpen(true)} 
+              <FaComment
+                className="text-gray-500 hover:text-blue-500 transition duration-300 mr-1 cursor-pointer"
+                onClick={() => setCommentModalOpen(true)}
               />
             </div>
-            <FaBookmark className="text-gray-500 hover:text-yellow-500 transition duration-300 cursor-pointer" />
+            <FaBookmark
+              className={`text-gray-500 hover:text-yellow-500 transition duration-300 cursor-pointer ${
+                isSaved ? "text-yellow-500" : ""
+              }`}
+              onClick={handleSave}
+            />
           </div>
           {ticketPrice && !isFree && (
-            <button className="text-white text-sm font-medium py-2 px-4 rounded  bg-indigo-600 hover:bg-indigo-700 transition duration-300"
-            onClick={() => setBuyTicketsModalOpen(true)} 
+            <button
+              className="text-white text-sm font-medium py-2 px-4 rounded  bg-indigo-600 hover:bg-indigo-700 transition duration-300"
+              onClick={() => setBuyTicketsModalOpen(true)}
             >
               Buy Ticket
             </button>
           )}
         </div>
         <ReportModal
-        isOpen={isReport}
-        onRequestClose={() => setReport(false)}
-      />
-      <CommentModal
+          isOpen={isReport}
+          onRequestClose={() => setReport(false)}
+        />
+        <CommentModal
           eventId={eventId}
           isOpen={isCommentModalOpen}
           onRequestClose={() => setCommentModalOpen(false)}
         />
-        <EventDetailsModal eventTickets={details} isOpen={showDetails} onRequestClose={() => setshowDetails(false)}/>
-        <Elements stripe={stripePromise}>
-         <BuyTicketModal
-          isOpen={isBuyTicketsModalOpen}
-          onRequestClose={() => setBuyTicketsModalOpen(false)}
-          ticketPrice={ticketPrice || 0}
-          eventImg={image}
-          eventId={eventId}
+        <EventDetailsModal
+          eventTickets={details}
+          isOpen={showDetails}
+          onRequestClose={() => setshowDetails(false)}
         />
+        <Elements stripe={stripePromise}>
+          <BuyTicketModal
+            isOpen={isBuyTicketsModalOpen}
+            onRequestClose={() => setBuyTicketsModalOpen(false)}
+            ticketPrice={ticketPrice || 0}
+            eventImg={image}
+            eventId={eventId}
+          />
         </Elements>
-      <EditEventModal profileEventChange={profileEventChange} showModal={isEditModal} closeModal={() => setEditModal(false)} initialEventData={initialEventData}/>
+        <EditEventModal
+          profileEventChange={profileEventChange}
+          showModal={isEditModal}
+          closeModal={() => setEditModal(false)}
+          initialEventData={initialEventData}
+        />
       </div>
     </div>
   );

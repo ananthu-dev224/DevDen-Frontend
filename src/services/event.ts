@@ -137,3 +137,68 @@ export const likeEvent = async (likeData: {eventId:string},dispatch:any): Promis
   }
 };
 
+// save event : /user/save-event
+export const saveEvent = async (saveData: {eventId:string},dispatch:any): Promise<any> => {
+  try {
+    const response = await api.post("/user/save-event", saveData);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      const message = error.response.data.message || "An error occurred";
+      toast.error(message);
+
+      // Check for token verification and authorization errors
+      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+        dispatch(userLogout());
+      }
+
+      return error.response.data;
+    } else {
+      toast.error("An unexpected error occurred. Please try again later.");
+    }
+  }
+};
+
+// check saved event : /user/save-event
+export const checkSaved = async (eventId:string,dispatch:any): Promise<any> => {
+  try {
+    const response = await api.get(`/user/save-event?eventId=${eventId}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      const message = error.response.data.message || "An error occurred";
+      toast.error(message);
+
+      // Check for token verification and authorization errors
+      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+        dispatch(userLogout());
+      }
+
+      return error.response.data;
+    } else {
+      toast.error("An unexpected error occurred. Please try again later.");
+    }
+  }
+};
+
+// user saved events : /user/saved
+export const userSaved = async (dispatch:any): Promise<any> => {
+  try {
+    const response = await api.get('/user/saved');
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      const message = error.response.data.message || "An error occurred";
+      toast.error(message);
+
+      // Check for token verification and authorization errors
+      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+        dispatch(userLogout());
+      }
+
+      return error.response.data;
+    } else {
+      toast.error("An unexpected error occurred. Please try again later.");
+    }
+  }
+};
