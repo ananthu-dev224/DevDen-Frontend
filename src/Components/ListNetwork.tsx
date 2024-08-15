@@ -1,12 +1,7 @@
 import { FC, useState } from "react";
 import { Link } from "react-router-dom";
+import { ListNetworkProps } from "../types/type";
 
-interface ListNetworkProps {
-  isOpen: boolean;
-  onClose: () => void;
-  followers: any[];
-  following: any[];
-}
 
 const ListNetwork: FC<ListNetworkProps> = ({
   isOpen,

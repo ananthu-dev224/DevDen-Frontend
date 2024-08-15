@@ -175,3 +175,88 @@ export interface DropdownProps {
   onDetails?: () => void;
   isProfile?: boolean;
 }
+
+export interface NavItemProps {
+  icon: JSX.Element;
+  text?: string;
+  to?: string;
+}
+
+export interface BuyTicketsModalProps {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  ticketPrice: number;
+  eventImg: string;
+  eventId: any;
+}
+
+export interface CardProps {
+  eventId: string;
+  userProfileImage: string;
+  username: string;
+  postedTime: string;
+  image: string;
+  description: string;
+  date: string;
+  time: string;
+  venue: string;
+  isFree: boolean;
+  ticketsLeft?: number;
+  ticketPrice?: number;
+  likeCount: any[];
+  isProfile?:boolean;
+  profileEventChange?: () => void;
+  fetchSaved?: () => void;
+}
+
+export interface CommentModalProps {
+  eventId: string;
+  isOpen: boolean;
+  onRequestClose: () => void;
+}
+
+export interface EditEventModalProps {
+  showModal: boolean;
+  closeModal: () => void;
+  profileEventChange?: () => void;
+  initialEventData: {
+    eventId: string;
+    description: string;
+    image: string;
+    date: string;
+    time: string;
+    venue: string;
+    isFree: boolean;
+    totalTickets?: number;
+    ticketPrice?: number;
+  };
+}
+
+export interface EventCropProps {
+  imageSrc: string;
+  onCropComplete: (croppedImage: string, imageBlob: Blob) => void;
+  onClose: () => void;
+}
+
+export interface ForgotPassProps {
+  isOpen: boolean;
+  onRequestClose: () => void;
+}
+
+export interface ListNetworkProps {
+  isOpen: boolean;
+  onClose: () => void;
+  followers: any[];
+  following: any[];
+}
+
+export interface NavItemProps {
+  icon: JSX.Element;
+  text?: string;
+  handleClick?: () => void;
+}
+
+export interface ReportModalProps {
+  isOpen: boolean;
+  onRequestClose: () => void;
+}

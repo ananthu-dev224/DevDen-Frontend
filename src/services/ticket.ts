@@ -1,39 +1,15 @@
 import api from "../utils/api/user";
 import { toast } from "sonner";
-import { eventData } from "../types/type";
 import { userLogout } from "../redux/reducers/userSlice";
 
-// Services of event in user 
-
-// Add event : /user/create-event
-export const addEvent = async (eventData: eventData,dispatch:any): Promise<any> => {
-  try {
-    const response = await api.post("/user/create-event", eventData);
-    return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      const message = error.response.data.message || "An error occurred";
-      toast.error(message);
-
-      // Check for token verification and authorization errors
-      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
-        dispatch(userLogout());
-      }
-
-      return error.response.data;
-    } else {
-      toast.error("An unexpected error occurred. Please try again later.");
-    }
-  }
-};
-
-// get events : /user/events
-export const getEvents = async (dispatch:any): Promise<any> => {
+// Stripe checkout : /user/checkout-session
+export const checkoutSession = async (data:{amount:number,quantity:number,eventImg:string,eventId:any},dispatch:any): Promise<any> => {
     try {
-      const response = await api.get("/user/events");
-      return response.data;
+      const response = await api.post('/user/checkout-session',data)
+      return response.data.id;
     } catch (error: any) {
       if (error.response) {
+        console.log(error.response)
         const message = error.response.data.message || "An error occurred";
         toast.error(message);
   
@@ -49,13 +25,37 @@ export const getEvents = async (dispatch:any): Promise<any> => {
     }
 };
 
-// get user created Events : /user/event/:userId
-export const getCreatedEvents = async (userId:any,dispatch:any): Promise<any> => {
+// Buy Ticket : /user/ticket
+export const buyTicket = async (data:{totalCost?:number,quantity?:number,eventId?:any,method:string,sessionId?:string},dispatch:any): Promise<any> => {
+    try {
+      const response = await api.post('/user/ticket',data)
+      return response.data;
+    } catch (error: any) {
+      if (error.response) {
+        console.log(error.response)
+        const message = error.response.data.message || "An error occurred";
+        toast.error(message);
+  
+        // Check for token verification and authorization errors
+        if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+          dispatch(userLogout());
+        }
+  
+        return error.response.data;
+      } else {
+        toast.error("An unexpected error occurred. Please try again later.");
+      }
+    }
+};
+
+// get user tickets : /user/my-tickets
+export const userTickets = async (dispatch:any): Promise<any> => {
   try {
-    const response = await api.get(`/user/event/${userId}`);
+    const response = await api.get('/user/my-tickets')
     return response.data;
   } catch (error: any) {
     if (error.response) {
+      console.log(error.response)
       const message = error.response.data.message || "An error occurred";
       toast.error(message);
 
@@ -71,13 +71,14 @@ export const getCreatedEvents = async (userId:any,dispatch:any): Promise<any> =>
   }
 };
 
-// Abort event : /user/abort-event/:eventId
-export const abortEvent = async (eventId:any,dispatch:any): Promise<any> => {
+// get eventDetails : /user/event-details/:id
+export const eventDetails = async (eventId:any,dispatch:any): Promise<any> => {
   try {
-    const response = await api.get(`/user/abort-event/${eventId}`);
+    const response = await api.get(`/user/event-details/${eventId}`)
     return response.data;
   } catch (error: any) {
     if (error.response) {
+      console.log(error.response)
       const message = error.response.data.message || "An error occurred";
       toast.error(message);
 
@@ -93,13 +94,14 @@ export const abortEvent = async (eventId:any,dispatch:any): Promise<any> => {
   }
 };
 
-// Add event : /user/create-event
-export const updateEvent = async (eventData: eventData,dispatch:any): Promise<any> => {
+// cancel and refund ticket : /user/cancel-ticket
+export const cancelTicket = async (cancelData:{ticketId:any},dispatch:any): Promise<any> => {
   try {
-    const response = await api.post("/user/edit-event", eventData);
+    const response = await api.post('/user/cancel-ticket',cancelData)
     return response.data;
   } catch (error: any) {
     if (error.response) {
+      console.log(error.response)
       const message = error.response.data.message || "An error occurred";
       toast.error(message);
 
@@ -115,13 +117,28 @@ export const updateEvent = async (eventData: eventData,dispatch:any): Promise<an
   }
 };
 
-// Like event : /user/like-event
-export const likeEvent = async (likeData: {eventId:string},dispatch:any): Promise<any> => {
+// downloadTicket as pdf : /user/download-ticket/:ticketId
+export const downloadTicket = async (ticketId:any,dispatch:any): Promise<any> => {
   try {
-    const response = await api.post("/user/like-event", likeData);
-    return response.data;
+    const response = await api.get(`/user/download-ticket/${ticketId}`, {
+      responseType: 'blob', // Important for handling file downloads
+    });
+    // Create a URL for the blob object
+    const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+
+    // Create a link element and trigger a download
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `DevDen Ticket-${ticketId}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+
+    // Clean up and remove the link
+    link.remove();
+    window.URL.revokeObjectURL(url);
   } catch (error: any) {
     if (error.response) {
+      console.log(error.response)
       const message = error.response.data.message || "An error occurred";
       toast.error(message);
 
@@ -137,57 +154,14 @@ export const likeEvent = async (likeData: {eventId:string},dispatch:any): Promis
   }
 };
 
-// save event : /user/save-event
-export const saveEvent = async (saveData: {eventId:string},dispatch:any): Promise<any> => {
+// verify ticket status by qr scan : /user/verify-qr/:ticketId
+export const verifyQR = async (ticketId:any,dispatch:any): Promise<any> => {
   try {
-    const response = await api.post("/user/save-event", saveData);
+    const response = await api.get(`/user/verify-qr/${ticketId}`)
     return response.data;
   } catch (error: any) {
     if (error.response) {
-      const message = error.response.data.message || "An error occurred";
-      toast.error(message);
-
-      // Check for token verification and authorization errors
-      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
-        dispatch(userLogout());
-      }
-
-      return error.response.data;
-    } else {
-      toast.error("An unexpected error occurred. Please try again later.");
-    }
-  }
-};
-
-// check saved event : /user/save-event
-export const checkSaved = async (eventId:string,dispatch:any): Promise<any> => {
-  try {
-    const response = await api.get(`/user/save-event?eventId=${eventId}`);
-    return response.data;
-  } catch (error: any) {
-    if (error.response) {
-      const message = error.response.data.message || "An error occurred";
-      toast.error(message);
-
-      // Check for token verification and authorization errors
-      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
-        dispatch(userLogout());
-      }
-
-      return error.response.data;
-    } else {
-      toast.error("An unexpected error occurred. Please try again later.");
-    }
-  }
-};
-
-// user saved events : /user/saved
-export const userSaved = async (dispatch:any): Promise<any> => {
-  try {
-    const response = await api.get('/user/saved');
-    return response.data;
-  } catch (error: any) {
-    if (error.response) {
+      console.log(error.response)
       const message = error.response.data.message || "An error occurred";
       toast.error(message);
 

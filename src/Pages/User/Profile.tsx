@@ -1,5 +1,6 @@
 import { FC, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import {
@@ -15,9 +16,10 @@ import EditProfile from "../../Components/EditProfile";
 import ImageCropperModal from "../../Components/ImageCropper";
 import { toast } from "sonner";
 import Card from "../../Components/Card";
-import { getCreatedEvents } from "../../services/event";
+import { getCreatedEvents, userSaved } from "../../services/event";
 import { getFollowers, getFollowing } from "../../services/network";
 import ListNetwork from "../../Components/ListNetwork";
+import { calculatePostedTime } from "../../utils/postedTime";
 
 const Profile: FC = () => {
   const [isEditProfileOpen, setEditProfileOpen] = useState(false);
@@ -25,9 +27,14 @@ const Profile: FC = () => {
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
   const [isListNetworkOpen, setListNetworkOpen] = useState(false);
-  const [listNetworkType, setListNetworkType] = useState<'followers' | 'following'>('followers');
+  const [listNetworkType, setListNetworkType] = useState<
+    "followers" | "following"
+  >("followers");
   const [imageToCrop, setImageToCrop] = useState("");
   const [events, setEvents] = useState<any[]>([]);
+  const [savedEvents, setSavedEvents] = useState<any[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const navigate = useNavigate();
   const [cropShape, setCropShape] = useState<"rectangular" | "circular">(
     "rectangular"
   );
@@ -37,7 +44,7 @@ const Profile: FC = () => {
   const openEditProfile = () => setEditProfileOpen(true);
   const closeEditProfile = () => setEditProfileOpen(false);
 
-  const openListNetwork = (type: 'followers' | 'following') => {
+  const openListNetwork = (type: "followers" | "following") => {
     setListNetworkType(type);
     setListNetworkOpen(true);
   };
@@ -64,13 +71,13 @@ const Profile: FC = () => {
       const userId = user._id;
       const followersResponse = await getFollowers(userId, dispatch);
       const followingResponse = await getFollowing(userId, dispatch);
-  
+
       if (followersResponse.status === "success") {
         setFollowers(followersResponse.followers);
       } else {
         toast.error("Failed to fetch followers");
       }
-  
+
       if (followingResponse.status === "success") {
         setFollowing(followingResponse.following);
       } else {
@@ -80,11 +87,18 @@ const Profile: FC = () => {
       console.error("Error fetching followers and following", error);
     }
   };
-  
+
+  const fetchSavedEvents = async () => {
+    const response = await userSaved(dispatch);
+    if (response.status === "success") {
+      setSavedEvents(response.saved);
+    }
+  };
 
   useEffect(() => {
     fetchEvents();
     fetchFollowersAndFollowing();
+    fetchSavedEvents();
   }, [Card]);
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -101,30 +115,6 @@ const Profile: FC = () => {
         }
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  // Function to calculate "posted time" relative to current time
-  const calculatePostedTime = (eventDate: Date): string => {
-    const currentDateTime = new Date();
-    const diffMs = currentDateTime.getTime() - eventDate.getTime();
-
-    // Convert milliseconds to minutes
-    const diffMinutes = Math.round(diffMs / (1000 * 60));
-
-    if (diffMinutes < 1) {
-      return "Now";
-    } else if (diffMinutes === 1) {
-      return "1 minute ago";
-    } else if (diffMinutes < 60) {
-      return `${diffMinutes} minutes ago`;
-    } else if (diffMinutes < 120) {
-      return "1 hour ago";
-    } else if (diffMinutes < 1440) {
-      const diffHours = Math.floor(diffMinutes / 60);
-      return `${diffHours} hours ago`;
-    } else {
-      return eventDate.toLocaleString();
     }
   };
 
@@ -183,22 +173,36 @@ const Profile: FC = () => {
               @{user?.username}
             </h1>
             <div className="flex space-x-4 mt-2">
-              <span onClick={() => openListNetwork('followers')} className="cursor-pointer">
+              <span
+                onClick={() => openListNetwork("followers")}
+                className="cursor-pointer"
+              >
                 <strong>{followers.length}</strong> Followers
               </span>
-              <span onClick={() => openListNetwork('following')} className="cursor-pointer">
+              <span
+                onClick={() => openListNetwork("following")}
+                className="cursor-pointer"
+              >
                 <strong>{following.length}</strong> Following
               </span>
               <span>
                 <strong>{events?.length || 0}</strong> Events
               </span>
             </div>
-            <button
-              className="mt-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-full"
-              onClick={openEditProfile}
-            >
-              Edit Profile
-            </button>
+            <div>
+              <button
+                className="mt-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-full"
+                onClick={openEditProfile}
+              >
+                Edit Profile
+              </button>
+              <button
+                className="mt-2 ml-2  px-4 py-2 bg-gray-300 text-black font-semibold rounded-full"
+                onClick={() => navigate("/my-tickets")}
+              >
+                My tickets
+              </button>
+            </div>
           </div>
           <div className="px-4 md:px-0">
             <p className="text-center md:text-left font-bold mb-3">
@@ -265,6 +269,19 @@ const Profile: FC = () => {
             <TabPanels>
               <TabPanel>
                 {/*Created Events*/}
+                {events.length === 0 && (
+                  <>
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <h1 className="text-xl font-semibold text-gray-700">
+                        No Events Hosted.
+                      </h1>
+                      <p className="text-gray-500 m-2">
+                        DevDen helps to connect and collaborate through tech
+                        events.
+                      </p>
+                    </div>
+                  </>
+                )}
                 {events.map((event) => {
                   const createdAtDate = new Date(event.createdAt);
                   const postedTime = calculatePostedTime(createdAtDate);
@@ -287,25 +304,77 @@ const Profile: FC = () => {
                         description={event.description}
                         isProfile={true}
                         profileEventChange={fetchEvents}
+                        fetchSaved={fetchSavedEvents}
                       />
                       {!event.isApproved && (
                         <div className="p-3 flex justify-center items-center bg-blue-500 text-white font-semibold rounded-b-lg">
-                        This Event will go live until admin approve!
-                      </div>
+                          This Event will go live until admin approve!
+                        </div>
                       )}
                     </div>
                   );
                 })}
               </TabPanel>
-              <TabPanel>{/* Saved Events*/}</TabPanel>
+              <TabPanel>
+                {selectedEvent ? (
+                  <div className="m-3">
+                    <button
+                      onClick={() => setSelectedEvent(null)}
+                      className="mb-4 px-4 py-2 bg-gray-300 text-black font-semibold rounded-lg"
+                    >
+                      Back to Saved Events
+                    </button>
+                    <Card
+                      eventId={selectedEvent.eventId._id}
+                      key={selectedEvent.eventId._id}
+                      date={selectedEvent.eventId.date}
+                      postedTime={calculatePostedTime(
+                        new Date(selectedEvent.eventId.createdAt)
+                      )}
+                      time={selectedEvent.eventId.time}
+                      isFree={selectedEvent.eventId.isFree}
+                      userProfileImage={selectedEvent.eventId.hostId.dp}
+                      username={selectedEvent.eventId.hostId.username}
+                      venue={selectedEvent.eventId.venue}
+                      ticketPrice={selectedEvent.eventId.ticketPrice}
+                      ticketsLeft={selectedEvent.eventId.totalTickets}
+                      likeCount={selectedEvent.eventId.likes}
+                      image={selectedEvent.eventId.image}
+                      description={selectedEvent.eventId.description}
+                      isProfile={true}
+                      fetchSaved={fetchSavedEvents}
+                    />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4">
+                    {savedEvents.length === 0 && (
+                      <div className="flex flex-col items-center justify-center h-full w-full col-span-full">
+                        <h1 className="text-xl font-semibold text-gray-700">
+                          No Saved Events.
+                        </h1>
+                      </div>
+                    )}
+                    {savedEvents.map((event) => (
+                      <div key={event.eventId._id} className="cursor-pointer">
+                        <img
+                          src={event.eventId.image}
+                          alt={event.eventId.date}
+                          className="w-full h-32 object-cover rounded-md"
+                          onClick={() => setSelectedEvent(event)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabPanel>
             </TabPanels>
           </TabGroup>
         </div>
         <ListNetwork
           isOpen={isListNetworkOpen}
           onClose={closeListNetwork}
-          followers={listNetworkType === 'followers' ? followers : []}
-          following={listNetworkType === 'following' ? following : []}
+          followers={listNetworkType === "followers" ? followers : []}
+          following={listNetworkType === "following" ? following : []}
         />
         <EditProfile isOpen={isEditProfileOpen} onClose={closeEditProfile} />
         <ImageCropperModal
