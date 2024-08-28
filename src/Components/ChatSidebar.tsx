@@ -4,17 +4,15 @@ import { getConversationUser } from "../services/chat";
 import { useDispatch } from "react-redux";
 import { formatTimestamp } from "../utils/chatTime";
 
-
 interface ChatSidebarProps {
   userId: string;
-  onSelectConversation: any;
+  onSelectConversation: (conversationId: string, memberId: string) => void;
 }
 
-const ChatSidebar: FC<ChatSidebarProps> = ({
-  userId,
-  onSelectConversation,
-}) => {
+const ChatSidebar: FC<ChatSidebarProps> = ({ userId, onSelectConversation }) => {
   const [conversations, setConversations] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
   const dispatch = useDispatch();
 
   const fetchConversations = useCallback(async () => {
@@ -31,22 +29,35 @@ const ChatSidebar: FC<ChatSidebarProps> = ({
     fetchConversations();
   }, [fetchConversations]);
 
+  // Filter conversations based on the search query
+  const filteredConversations = conversations.filter((conversation) => {
+    const otherMembers = conversation.members.filter(
+      (member: any) => member._id !== userId
+    );
+
+    return otherMembers.some((member: any) =>
+      member.username.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
+
   return (
-    <div className="w-full md:w-1/3 bg-white shadow-lg p-4 mr-3 ">
+    <div className="w-full md:w-1/3 bg-white shadow-lg p-4 mr-3">
       <div className="mb-4">
         <input
           type="text"
           placeholder="Search"
-          className="w-full p-2 rounded-lg border mb-4  focus:border-black outline-none"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full p-2 rounded-lg border mb-4 focus:border-black outline-none"
         />
-        <button className="w-full p-2 bg-gray-900 text-white rounded-lg">
+        {/* <button className="w-full p-2 bg-gray-900 text-white rounded-lg">
           Create Group Chat
-        </button>
+        </button> */}
       </div>
 
       <h2 className="text-xl font-bold mb-4">Chats</h2>
       <ul className="space-y-4 max-h-[calc(100vh-240px)] overflow-y-auto">
-        {conversations.map((conversation) => {
+        {filteredConversations.map((conversation) => {
           const otherMembers = conversation.members.filter(
             (member: any) => member._id !== userId
           );
@@ -67,9 +78,7 @@ const ChatSidebar: FC<ChatSidebarProps> = ({
                   @{memberId.username}
                 </span>
                 {memberId.chatStatus === "Online" ? (
-                  <span className="text-green-500 text-sm">
-                    Active
-                  </span>
+                  <span className="text-green-500 text-sm">Active</span>
                 ) : (
                   <span className="text-gray-500 text-sm">
                     Last seen {formatTimestamp(memberId.lastSeen)}
@@ -83,5 +92,9 @@ const ChatSidebar: FC<ChatSidebarProps> = ({
     </div>
   );
 };
+
+
+
+
 
 export default ChatSidebar;

@@ -1,10 +1,11 @@
 import { FC, useState, useEffect, useRef } from "react";
-import { FaPhone, FaVideo, FaImage, FaPaperPlane } from "react-icons/fa";
+import { FaPhone, FaVideo, FaTrash, FaPaperPlane } from "react-icons/fa";
 import pfp from "../assets/pfp.jpeg";
 import socket from "../config/socket";
 import { useDispatch } from "react-redux";
-import { getMessage, addMessage } from "../services/chat";
+import { getMessage, addMessage, deleteMessage } from "../services/chat";
 import { formatTimestamp } from "../utils/chatTime";
+import { confirmAlert } from 'react-confirm-alert';
 
 interface ChatWindowProps {
   userId: string;
@@ -20,6 +21,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const [messages, setMessages] = useState<any[]>([]);
   const [messageText, setMessageText] = useState("");
   const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [clickedMessageId, setClickedMessageId] = useState<string | null>(null);
   const dispatch = useDispatch();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -28,36 +30,23 @@ const ChatWindow: FC<ChatWindowProps> = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleImageClick = () => {
-    const fileInput = document.createElement("input");
-    fileInput.type = "file";
-    fileInput.accept = "image/*";
-    fileInput.onchange = (event) => {
-      const file = (event.target as HTMLInputElement)?.files?.[0];
-      if (file) {
-        console.log("Selected file:", file);
-        // Handle file upload here
-      }
-    };
-    fileInput.click();
-  };
-
   useEffect(() => {
     if (!conversationId) return;
 
     const data = {
       conversationId,
-      userId
-    }
+      userId,
+    };
 
     // Join the conversation room
-    socket.emit("joinConversation",data);
+    socket.emit("joinConversation", data);
 
     const fetchMessages = async () => {
       try {
         const response = await getMessage(conversationId, dispatch);
         if (response.status === "success") {
           setMessages(response.messages);
+          console.log(messages)
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -77,18 +66,18 @@ const ChatWindow: FC<ChatWindowProps> = ({
 
     // Listen for typing events
     socket.on("typing", (userId: string) => {
-        setIsTyping(true);
+      setIsTyping(true);
     });
 
     socket.on("stopTyping", (userId: string) => {
-        setIsTyping(false);
+      setIsTyping(false);
     });
 
     return () => {
-      socket.emit("leaveConversation",data);
+      socket.emit("leaveConversation", data);
       socket.off("message");
     };
-  }, []);
+  }, [conversationId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -110,7 +99,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
       conversationId,
       senderId: userId,
       text: messageText,
-      createdAt: new Date
+      createdAt: new Date(),
     };
 
     socket.emit("sendMessage", newMessage);
@@ -129,12 +118,29 @@ const ChatWindow: FC<ChatWindowProps> = ({
     handleTyping();
   };
 
+  const handleClickMessage = (messageId: string, senderId: string) => {
+    if (senderId === userId) {
+      setClickedMessageId((prevMessageId) =>
+        prevMessageId === messageId ? null : messageId
+      );
+      console.log(clickedMessageId);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    const res = await deleteMessage(messageId, dispatch);
+    if (res.status === "success") {
+      setMessages((prevMessages) =>
+        prevMessages.filter((message) => message._id !== messageId)
+      );
+    }
+  };
 
   return (
     <div className="flex-1 bg-white shadow-lg flex flex-col h-full">
       <div className="flex justify-between items-center p-4 border-b border-gray-200">
         <div className="flex items-center space-x-4">
-          <img src={pfp} alt="Profile" className="w-10 h-10 rounded-full" />
+          <img src={selectedUser.dp || pfp} alt="Profile" className="w-10 h-10 rounded-full" />
           <div>
             <h2 className="text-xl font-bold">{selectedUser.name}</h2>
             <span className="text-sm text-gray-500">
@@ -165,12 +171,41 @@ const ChatWindow: FC<ChatWindowProps> = ({
             </div>
             <div
               key={index}
-              className={`flex ${
+              onClick={() =>
+                handleClickMessage(
+                  message._id,
+                  message.senderId._id || message.senderId
+                )
+              }
+              className={`flex  ${
                 message.senderId === userId || message.senderId._id === userId
                   ? "justify-end"
                   : "justify-start"
               }`}
             >
+              {clickedMessageId === message._id && (
+                <FaTrash
+                  className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
+                  onClick={() => {
+                    confirmAlert({
+                      title: 'Confirm to Delete Message',
+                      message: 'Are you sure?',
+                      buttons: [
+                        {
+                          label: 'Yes',
+                          onClick: () => {
+                            handleDeleteMessage(message._id);
+                          }
+                        },
+                        {
+                          label: 'No',
+                        }
+                      ]
+                    });
+                  }}
+                  size={15}
+                />
+              )}
               <div
                 className={`p-3 rounded-lg max-w-xs ${
                   message.senderId === userId || message.senderId._id === userId
@@ -185,14 +220,14 @@ const ChatWindow: FC<ChatWindowProps> = ({
         ))}
         <div ref={messagesEndRef} />
         {isTyping && (
-        <div className="bg-gray-200 p-4 rounded-lg w-10 flex align-middle justify-center">
-          <div className="typing-dots">
-          <div className="typing-dot"></div>
-          <div className="typing-dot"></div>
-          <div className="typing-dot"></div>
-        </div>
-        </div>
-      )}
+          <div className="bg-gray-200 p-4 rounded-lg w-10 flex align-middle justify-center">
+            <div className="typing-dots">
+              <div className="typing-dot"></div>
+              <div className="typing-dot"></div>
+              <div className="typing-dot"></div>
+            </div>
+          </div>
+        )}
       </div>
       <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
         <input
@@ -201,7 +236,6 @@ const ChatWindow: FC<ChatWindowProps> = ({
           value={messageText}
           onBlur={handleStopTyping}
           onChange={handleInputChange}
-
           className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
         />
         {/* <FaImage
