@@ -9,17 +9,17 @@ import {
   FaLink,
   FaRegAddressCard,
   FaMapMarkerAlt,
-  FaCamera,
 } from "react-icons/fa";
 import header from "../../assets/header.jpg";
 import pfp from "../../assets/pfp.jpeg";
 import Card from "../../Components/Card";
 import ListNetwork from "../../Components/ListNetwork";
+import { addConversation } from "../../services/chat";
 import { toast } from "sonner";
 import { calculatePostedTime } from "../../utils/postedTime";
 
 const OtherProfile: FC = () => {
-    const { userId } = useParams<{ userId: string }>();
+  const { userId } = useParams<{ userId: string }>();
   const [user, setUser] = useState<any>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [followers, setFollowers] = useState<any[]>([]);
@@ -123,6 +123,17 @@ const OtherProfile: FC = () => {
 
   const closeListNetwork = () => setListNetworkOpen(false);
 
+  const handleMessage = async () => {
+      const data = {
+         recieverId : userId
+      }
+      console.log(data)
+      const res = await addConversation(data,dispatch);
+      if(res.status === 'success'){
+        navigate(`/chat?conversationId=${res.conversation._id}`)
+      }
+  }
+
   return (
     <div className="flex bg-gray-200 min-h-screen">
       <Navbar />
@@ -166,8 +177,8 @@ const OtherProfile: FC = () => {
             </button>
             {isFollowing && (
                 <button
+                onClick={handleMessage}
                 className="mt-2 ml-3 px-4 py-2 text-green-800 ring-1 ring-green-800 font-semibold rounded-full"
-                
               >
                 Message
               </button>
@@ -225,16 +236,6 @@ const OtherProfile: FC = () => {
               >
                 Events
               </Tab>
-              <Tab
-                as="button"
-                className={({ selected }) =>
-                  selected
-                    ? "text-gray-900 border-b-2 border-gray-900 font-bold focus:outline-none hover:bg-zinc-300 p-2"
-                    : "text-gray-500"
-                }
-              >
-                Saved
-              </Tab>
             </TabList>
             <TabPanels>
               <TabPanel>
@@ -264,7 +265,7 @@ const OtherProfile: FC = () => {
                   );
                 })}
               </TabPanel>
-              <TabPanel>{/* Saved Events */}</TabPanel>
+            
             </TabPanels>
           </TabGroup>
         </div>

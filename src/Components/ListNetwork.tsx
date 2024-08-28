@@ -1,6 +1,7 @@
 import { FC, useState } from "react";
 import { Link } from "react-router-dom";
 import { ListNetworkProps } from "../types/type";
+import pfp from '../assets/pfp.jpeg'
 
 
 const ListNetwork: FC<ListNetworkProps> = ({
@@ -51,7 +52,7 @@ const ListNetwork: FC<ListNetworkProps> = ({
                 <Link to={`/profile/${user._id}`} >
               <li key={user._id} className="flex items-center border-b py-3">
                 <img
-                  src={user.dp || "/default-avatar.png"} // Use a default image if dp is not available
+                  src={user.dp || pfp}
                   alt={`${user.username}'s profile`}
                   className="w-10 h-10 rounded-full mr-4 object-cover"
                 />

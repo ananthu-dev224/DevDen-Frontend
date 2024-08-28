@@ -25,6 +25,7 @@ import PaymentSuccess from "./Pages/User/PaymentSuccess";
 import Tickets from "./Pages/User/Tickets";
 import Page404 from "./Pages/Page404";
 import VerifyQR from "./Pages/User/VerifyQR";
+import Chat from "./Pages/User/Chat";
 // Protected
 import AdminProtected from "./routes/adminProtected";
 import UserProtected from "./routes/userProtected";
@@ -44,6 +45,7 @@ const App: FC = () => {
               <Route path="/profile/:userId" element={<UserProtected><OtherProfile /></UserProtected>} />
               <Route path="/create-event" element={<UserProtected><CreateEvent /></UserProtected>} />
               <Route path="/explore" element={<UserProtected><Explore /></UserProtected>} />
+              <Route path="/chat" element={<UserProtected><Chat /></UserProtected>} />
               <Route path="/payment-success" element={<UserProtected><PaymentSuccess /></UserProtected>} />
               <Route path="/payment-failure" element={<UserProtected><PaymentFail /></UserProtected>} />
               <Route path="/my-tickets" element={<UserProtected><Tickets /></UserProtected>} />

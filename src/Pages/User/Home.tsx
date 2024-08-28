@@ -8,6 +8,7 @@ import { calculatePostedTime } from "../../utils/postedTime";
 
 const Home: FC = () => {
   const [events, setEvents] = useState<any[]>([]);
+  console.log(events)
   const [filter, setFilter] = useState<string>("all");
   const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);

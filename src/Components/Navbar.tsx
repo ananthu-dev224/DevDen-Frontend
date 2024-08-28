@@ -11,6 +11,7 @@ import {
 import logo from "../assets/devden.jpg"; 
 import { confirmAlert } from 'react-confirm-alert';
 import {toast} from 'sonner'
+import socket from "../config/socket";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { userLogout } from "../redux/reducers/userSlice";
@@ -36,6 +37,7 @@ const Navbar: FC = (): ReactElement => {
           label: 'Yes',
           onClick: () => {
              dispatch(userLogout())
+             socket.disconnect();
           }
         },
         {
@@ -56,13 +58,13 @@ const Navbar: FC = (): ReactElement => {
             <NavItem icon={<Explore />} text="Explore" handleClick={() => navigate('/explore')} />
             <NavItem icon={<Host />} text="Create Event" handleClick={() => navigate('/create-event')} />
             <div className="relative">
-            <NavItem icon={<Notification />} text="Notification" />
+            <NavItem icon={<Notification />} text="Notification"  handleClick={() => navigate('/notifications')} />
               <span className="absolute top-3 right-0  flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
             </div>
-            <NavItem icon={<FaComments className="h-6 w-6" />} text="Chat" />
+            <NavItem icon={<FaComments className="h-6 w-6" />} text="Chat"  handleClick={() => navigate('/chat')} />
           </div>
           <div className="mt-auto mb-10 mr-10">
             <NavItem icon={<Profile />} text="Profile" handleClick={() => navigate('/profile')} />
@@ -73,8 +75,8 @@ const Navbar: FC = (): ReactElement => {
           <HomeIcon fn={() => navigate('/')} />
           <Explore  fn={() => navigate('/explore')} />
           <Host  fn={() => navigate('/create-event')} />
-          <Notification />       
-          <FaComments className="h-6 w-6" />
+          <Notification fn={() => navigate('/notifications')} />       
+          <FaComments className="h-6 w-6" onClick={() => navigate('/chat')} />
           <Profile fn={() => navigate('/profile')} />
             <Logout fn={handleLogout} />
         </div>

@@ -92,7 +92,7 @@ const EventPortal: FC = () => {
                       image={event.image}
                       description={event.description}
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-center items-center">
+                    <div className="absolute bottom-0 left-0 right-0 p-4  flex justify-center items-center">
                       Make Event Live on DevDen : &nbsp; 
                       <button
                         onClick={() => handleApprove(event._id)}

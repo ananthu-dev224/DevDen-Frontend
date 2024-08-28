@@ -68,15 +68,17 @@ const Card: FC<CardProps> = ({
   };
 
   useEffect(() => {
-    const checkIfSaved = async () => {
-      const result = await checkSaved(eventId,dispatch);
-      if (result.status === 'success') {
-        setIsSaved(result.isSaved);
-      }
-    };
-  
-    checkIfSaved();
-  }, [eventId, user._id, dispatch]);
+    if(user?._id){
+      const checkIfSaved = async () => {
+        const result = await checkSaved(eventId,dispatch);
+        if (result.status === 'success') {
+          setIsSaved(result.isSaved);
+        }
+      };
+    
+      checkIfSaved();
+    }
+  }, [eventId, user?._id, dispatch]);
 
   const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_API_KEY);
 
