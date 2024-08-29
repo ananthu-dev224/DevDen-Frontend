@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 import { getMessage, addMessage, deleteMessage } from "../services/chat";
 import { formatTimestamp } from "../utils/chatTime";
 import { confirmAlert } from 'react-confirm-alert';
+import { Link } from "react-router-dom";
 
 interface ChatWindowProps {
   userId: string;
@@ -139,6 +140,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
   return (
     <div className="flex-1 bg-white shadow-lg flex flex-col h-full">
       <div className="flex justify-between items-center p-4 border-b border-gray-200">
+      <Link to={`/profile/${selectedUser._id}`} >
         <div className="flex items-center space-x-4">
           <img src={selectedUser.dp || pfp} alt="Profile" className="w-10 h-10 rounded-full" />
           <div>
@@ -148,6 +150,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
             </span>
           </div>
         </div>
+        </Link>
         <div className="flex space-x-4">
           <FaPhone
             className="text-gray-500 cursor-pointer hover:text-gray-800"

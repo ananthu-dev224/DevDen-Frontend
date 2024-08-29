@@ -9,6 +9,7 @@ import {
   FaRegAddressCard,
   FaMapMarkerAlt,
   FaCamera,
+  FaWallet,
 } from "react-icons/fa";
 import header from "../../assets/header.jpg";
 import pfp from "../../assets/pfp.jpeg";
@@ -103,18 +104,27 @@ const Profile: FC = () => {
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
+      const fileInput = event.target;
       const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = () => {
-        setImageToCrop(reader.result as string);
-        setCropperOpen(true);
-        if (event.target.id === "profile-image-input") {
-          setCropShape("circular");
-        } else {
-          setCropShape("rectangular");
-        }
-      };
-      reader.readAsDataURL(file);
+      if (
+        file &&
+        ["image/jpeg", "image/jpg", "image/png"].includes(file.type)
+      ) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          setImageToCrop(reader.result as string);
+          setCropperOpen(true);
+          if (event.target.id === "profile-image-input") {
+            setCropShape("circular");
+          } else {
+            setCropShape("rectangular");
+          }
+        };
+        reader.readAsDataURL(file);
+      } else {
+        toast.info("Please select a valid image file (jpeg, jpg, or png).");
+        fileInput.value = "";
+      }
     }
   };
 
@@ -243,6 +253,16 @@ const Profile: FC = () => {
               </div>
             )}
           </div>
+          <div className="flex justify-between items-center px-4 md:px-0 text-green-600">
+            <div className="flex items-center space-x-2">
+              <FaWallet className="w-5 h-5" />
+              <span>Balance: $ {user?.wallet}</span>
+            </div>
+            <button className="px-4 py-2 bg-green-600 text-white font-medium rounded-lg">
+              Withdraw
+            </button>
+          </div>
+
           <TabGroup>
             <TabList className="flex space-x-4 border-b ml-4 sm:ml-0">
               <Tab

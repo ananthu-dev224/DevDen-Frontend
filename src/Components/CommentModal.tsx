@@ -198,10 +198,10 @@ const CommentModal: FC<CommentModalProps> = ({
                       <FaFlag className="mr-1" />
                       <span>Report</span>
                     </button>
-                    <button className="flex items-center hover:text-blue-700 transition duration-150 text-xs">
+                    {/* <button className="flex items-center hover:text-blue-700 transition duration-150 text-xs">
                       <FaReply className="mr-1" />
                       <span>Reply</span>
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               );

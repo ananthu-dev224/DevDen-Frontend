@@ -8,8 +8,6 @@ import { calculatePostedTime } from "../../utils/postedTime";
 
 const Home: FC = () => {
   const [events, setEvents] = useState<any[]>([]);
-  console.log(events)
-  const [filter, setFilter] = useState<string>("all");
   const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);
 
@@ -32,59 +30,18 @@ const Home: FC = () => {
   }, []);
   
 
-  const handleFilterChange = (filter: string) => {
-    setFilter(filter);
-  };
 
 
-  // Filter events based on the selected filter
-  const filteredEvents = events.filter(event => {
-    if (filter === "all") {
-      return true;
-    }
-    if (filter === "free") {
-      return event.isFree;
-    }
-    if (filter === "paid") {
-      return !event.isFree;
-    }
-    return true;
-  });
 
   return (
     <div className="flex bg-gray-200 min-h-screen">
       <Navbar />
       <div className="flex-1 p-4 md:p-10 ml-0 md:ml-72 overflow-auto">
         <div className="flex justify-between items-center pb-4">
-        <div className="flex space-x-2">
-            <button
-              onClick={() => handleFilterChange("all")}
-              className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
-                filter === "all" ? "bg-gray-800 text-white shadow-lg animate-pulse" : "bg-white text-gray-800 border border-gray-800"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => handleFilterChange("free")}
-              className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
-                filter === "free" ? "bg-gray-800 text-white shadow-lg animate-pulse" : "bg-white text-gray-800 border border-gray-800"
-              }`}
-            >
-              Free
-            </button>
-            <button
-              onClick={() => handleFilterChange("paid")}
-              className={`px-3 py-1 rounded-full text-sm transition-all duration-300 ${
-                filter === "paid" ? "bg-gray-800 text-white shadow-lg animate-pulse" : "bg-white text-gray-800 border border-gray-800"
-              }`}
-            >
-              Paid
-            </button>
-          </div>
+       
         </div>
         <div className="flex flex-col space-y-10 pb-20 md:pb-0">
-          {filteredEvents.map(event => {
+          {events.map(event => {
             const createdAtDate = new Date(event.createdAt);
             const postedTime = calculatePostedTime(createdAtDate);
             const username = user.username === event.hostId.username ? `${event.hostId.username} (You)` : event.hostId.username;
@@ -112,5 +69,7 @@ const Home: FC = () => {
     </div>
   );
 };
+
+
 
 export default Home;
