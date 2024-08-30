@@ -21,10 +21,12 @@ import { getCreatedEvents, userSaved } from "../../services/event";
 import { getFollowers, getFollowing } from "../../services/network";
 import ListNetwork from "../../Components/ListNetwork";
 import { calculatePostedTime } from "../../utils/postedTime";
+import WithdrawModal from "../../Components/Withdraw";
 
 const Profile: FC = () => {
   const [isEditProfileOpen, setEditProfileOpen] = useState(false);
   const [isCropperOpen, setCropperOpen] = useState(false);
+  const [isWithdrawOpen, setWithdrawOpen] = useState(false);
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
   const [isListNetworkOpen, setListNetworkOpen] = useState(false);
@@ -44,6 +46,8 @@ const Profile: FC = () => {
 
   const openEditProfile = () => setEditProfileOpen(true);
   const closeEditProfile = () => setEditProfileOpen(false);
+
+  const closeWithdraw = () => setWithdrawOpen(false);
 
   const openListNetwork = (type: "followers" | "following") => {
     setListNetworkType(type);
@@ -258,8 +262,8 @@ const Profile: FC = () => {
               <FaWallet className="w-5 h-5" />
               <span>Balance: $ {user?.wallet}</span>
             </div>
-            <button className="px-4 py-2 bg-green-600 text-white font-medium rounded-lg">
-              Withdraw
+            <button className="text-blue-600" onClick={() => setWithdrawOpen(true)}>
+              Withdraw balance?
             </button>
           </div>
 
@@ -404,6 +408,7 @@ const Profile: FC = () => {
           cropShape={cropShape}
         />
       </div>
+      <WithdrawModal balance={user.wallet} isOpen={isWithdrawOpen} onRequestClose={closeWithdraw} />
     </div>
   );
 };

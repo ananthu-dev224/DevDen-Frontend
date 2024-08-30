@@ -176,3 +176,26 @@ export const verifyQR = async (ticketId:any,dispatch:any): Promise<any> => {
     }
   }
 };
+
+// withdraw wallet money : /user/withdraw
+export const withdraw = async (data:{amount:any},dispatch:any): Promise<any> => {
+  try {
+    const response = await api.post('/user/withdraw',data)
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      console.log(error.response)
+      const message = error.response.data.message || "An error occurred";
+      toast.error(message);
+
+      // Check for token verification and authorization errors
+      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+        dispatch(userLogout());
+      }
+
+      return error.response.data;
+    } else {
+      toast.error("An unexpected error occurred. Please try again later.");
+    }
+  }
+};
