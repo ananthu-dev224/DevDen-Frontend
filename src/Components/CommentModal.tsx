@@ -7,6 +7,7 @@ import { confirmAlert } from 'react-confirm-alert';
 import pfp from "../assets/pfp.jpeg";
 import { calculatePostedTime } from "../utils/postedTime";
 import { CommentModalProps } from "../types/type";
+import ReportModal from "./Report";
 
 
 const CommentModal: FC<CommentModalProps> = ({
@@ -16,6 +17,8 @@ const CommentModal: FC<CommentModalProps> = ({
 }) => {
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [reportComment,setReportComment] = useState('');
+  const [isReportModal,setReportModal] = useState(false);
   const user = useSelector((store: any) => store.user.user);
   const dispatch = useDispatch();
 
@@ -95,6 +98,15 @@ const CommentModal: FC<CommentModalProps> = ({
       toast.error("Failed to like comment.");
     }
   };
+
+  const closeReport = () => {
+      setReportModal(false)
+  }
+
+  const handleReport = (id:any) => {
+      setReportComment(id)
+      setReportModal(true)
+  }
 
 
   return (
@@ -194,7 +206,9 @@ const CommentModal: FC<CommentModalProps> = ({
                       />
                       <span>{comment.likes.length}</span>
                     </button>
-                    <button className="flex items-center hover:text-gray-700 transition duration-150 text-xs">
+                    <button 
+                    onClick={() => handleReport(comment._id)}
+                    className="flex items-center hover:text-gray-700 transition duration-150 text-xs">
                       <FaFlag className="mr-1" />
                       <span>Report</span>
                     </button>
@@ -210,6 +224,7 @@ const CommentModal: FC<CommentModalProps> = ({
             <p className="text-gray-500 text-center">No comments yet.</p>
           )}
         </div>
+        <ReportModal category="comment" isOpen={isReportModal} onRequestClose={closeReport} id={reportComment} />
       </div>
     </div>
   );

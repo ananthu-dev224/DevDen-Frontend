@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import ReactDOM from 'react-dom';
 import { ReportModalProps } from '../types/type';
+import { reportComment, reportEvent } from '../services/report';
+import {toast} from 'sonner'
 
 
-
-const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose }) => {
+const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose, category, id }) => {
   const [selectedReportType, setSelectedReportType] = useState<string>('');
+  const dispatch = useDispatch();
 
   if (!isOpen) return null;
 
@@ -13,8 +16,29 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose }) => 
     setSelectedReportType(type);
   };
 
-  const handleSubmit = () => {
-
+  const handleSubmit = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    if (selectedReportType) {
+      const data = {
+        id,
+        type: selectedReportType
+      }
+      try {
+        if (category === 'event') {
+          const res = await reportEvent(data,dispatch);
+          if(res.status === 'success'){
+             toast.success('Event reported successfully.')
+          }
+        } else if (category === 'comment') {
+          const res = await reportComment(data,dispatch);
+          if(res.status === 'success'){
+            toast.success('Comment reported successfully.')
+         }
+        }
+      } catch (error) {
+        console.error('Error reporting:', error);
+      }
+    }
     onRequestClose();
   };
 
@@ -27,7 +51,7 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose }) => 
         >
           &times;
         </button>
-        <h2 className="text-xl text-center font-semibold mb-4">Report Event</h2>
+        <h2 className="text-xl text-center font-semibold mb-4">Report</h2>
         <div className="flex flex-col">
           <label className="mb-2 font-medium">Select Report Type:</label>
           <select
@@ -43,7 +67,7 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose }) => 
             <option value="other">Other</option>
           </select>
           <button
-            className="bg-gray-800 text-white py-2 px-4 rounded hover:bg-gray-900"
+            className="bg-red-700 text-white py-2 px-4 rounded hover:bg-red-800"
             onClick={handleSubmit}
           >
             Done
@@ -54,5 +78,7 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose }) => 
     document.body
   );
 };
+
+
 
 export default ReportModal;

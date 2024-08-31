@@ -7,6 +7,7 @@ import { getMessage, addMessage, deleteMessage } from "../services/chat";
 import { formatTimestamp } from "../utils/chatTime";
 import { confirmAlert } from 'react-confirm-alert';
 import { Link } from "react-router-dom";
+import { v4 as uuidv4 } from 'uuid';
 
 interface ChatWindowProps {
   userId: string;
@@ -95,8 +96,11 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const handleSendMessage = async () => {
     handleStopTyping();
     if (messageText.trim() === "") return;
-
+    
+    const tempId = uuidv4();
+    
     const newMessage = {
+      _id: tempId,
       conversationId,
       senderId: userId,
       text: messageText,
@@ -110,7 +114,20 @@ const ChatWindow: FC<ChatWindowProps> = ({
       dispatch
     );
     if (res.status === "success") {
+      // Replace the temporary message with the real one in the state
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message._id === tempId
+            ? { ...message, _id: res.message._id}
+            : message
+        )
+      );
       setMessageText("");
+    } else {
+      setMessages((prevMessages) =>
+        prevMessages.filter((message) => message._id !== tempId)
+      );
+      console.error("Failed to save message to database");
     }
   };
 

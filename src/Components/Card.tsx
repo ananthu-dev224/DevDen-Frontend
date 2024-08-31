@@ -251,6 +251,8 @@ const Card: FC<CardProps> = ({
         <ReportModal
           isOpen={isReport}
           onRequestClose={() => setReport(false)}
+          category="event"
+          id={eventId}
         />
         <CommentModal
           eventId={eventId}

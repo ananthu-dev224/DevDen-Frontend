@@ -26,6 +26,9 @@ import Tickets from "./Pages/User/Tickets";
 import Page404 from "./Pages/Page404";
 import VerifyQR from "./Pages/User/VerifyQR";
 import Chat from "./Pages/User/Chat";
+import Notifications from "./Pages/User/Notifications";
+import CommentReport from "./Pages/Admin/CommentReport";
+import EventReport from "./Pages/Admin/EventReport";
 // Protected
 import AdminProtected from "./routes/adminProtected";
 import UserProtected from "./routes/userProtected";
@@ -46,6 +49,7 @@ const App: FC = () => {
               <Route path="/create-event" element={<UserProtected><CreateEvent /></UserProtected>} />
               <Route path="/explore" element={<UserProtected><Explore /></UserProtected>} />
               <Route path="/chat" element={<UserProtected><Chat /></UserProtected>} />
+              <Route path="/notifications" element={<UserProtected><Notifications /></UserProtected>} />
               <Route path="/payment-success" element={<UserProtected><PaymentSuccess /></UserProtected>} />
               <Route path="/payment-failure" element={<UserProtected><PaymentFail /></UserProtected>} />
               <Route path="/my-tickets" element={<UserProtected><Tickets /></UserProtected>} />
@@ -56,6 +60,8 @@ const App: FC = () => {
               <Route path="/admin" element={<Admin />} />
               <Route path="/dashboard" element={<AdminProtected><Dashboard /></AdminProtected>} />
               <Route path="/user-desk" element={<AdminProtected><Users /></AdminProtected>} />
+              <Route path="/comments" element={<AdminProtected><CommentReport /></AdminProtected>} />
+              <Route path="/events" element={<AdminProtected><EventReport /></AdminProtected>} />
               <Route path="/event-portal" element={<AdminProtected><EventPortal /></AdminProtected>} />
             </Routes>
           </Router>

@@ -259,4 +259,6 @@ export interface NavItemProps {
 export interface ReportModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
+  category: string;
+  id: string;
 }
