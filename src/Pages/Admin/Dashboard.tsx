@@ -113,7 +113,7 @@ const Dashboard: FC = () => {
           </div>
           <div className="bg-white p-6 rounded-lg shadow-lg mb-10">
             <h2 className="text-xl font-semibold mb-4">
-              Commission Earned Daily
+              Commission Earned Weekly
             </h2>
             <Bar data={dailyCommissionData} /> {/* Updated to Bar chart */}
           </div>

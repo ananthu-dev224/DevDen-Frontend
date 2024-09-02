@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect,CSSProperties } from "react";
 import pfp from "../assets/pfp.jpeg";
 import ReportModal from "./Report";
 import { Elements } from "@stripe/react-stripe-js";
@@ -24,6 +24,17 @@ import CommentModal from "./CommentModal";
 import BuyTicketModal from "./BuyTicket";
 import { CardProps } from "../types/type";
 import EventDetailsModal from "./EventDetails";
+import { ScaleLoader } from "react-spinners";
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
 
 const Card: FC<CardProps> = ({
   eventId,
@@ -52,6 +63,7 @@ const Card: FC<CardProps> = ({
   const [isBuyTicketsModalOpen, setBuyTicketsModalOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likes, setLikes] = useState(likeCount);
+  const [loading,setLoading] = useState<boolean>(false)
   const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);
 
@@ -152,7 +164,9 @@ const Card: FC<CardProps> = ({
                   {
                     label: "Yes",
                     onClick: async () => {
+                      setLoading(true)
                       const result = await abortEvent(eventId, dispatch);
+                      setLoading(false)
                       if (result.status === "success") {
                         if (profileEventChange) {
                           profileEventChange();
@@ -248,6 +262,11 @@ const Card: FC<CardProps> = ({
             </button>
           )}
         </div>
+        {loading && (
+        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+      </div>
+      )}
         <ReportModal
           isOpen={isReport}
           onRequestClose={() => setReport(false)}

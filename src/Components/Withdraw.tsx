@@ -62,7 +62,6 @@ const WithdrawModal: FC<WithdrawProps> = ({
     setLoading(false);
     if (res.status === "success") {
       const userData = res.updatedUser;
-      console.log(userData)
       toast.success("Withdrawal success to your stripe connect account.");
       dispatch(editProfile({ user: userData }));
       onRequestClose();

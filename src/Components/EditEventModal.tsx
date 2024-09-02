@@ -210,16 +210,22 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
             </div>
             <div className="flex items-center">
               <input
-                type="checkbox"
+                type="hidden"
                 name="isFree"
                 id="isFree"
                 checked={eventData.isFree}
                 onChange={handleChange}
                 className="h-4 w-4 text-indigo-600 border-gray-300 rounded-sm focus:ring-0 focus:ring-transparent"
               />
-              <label htmlFor="isFree" className="ml-2 block text-sm font-medium text-gray-700">
-                Free Event
+              {eventData.isFree ? (
+                <label htmlFor="isFree" className="ml-2 block text-sm font-medium text-gray-700">
+                Event Entry : Free 
               </label>
+              ):(
+                <label htmlFor="isFree" className="ml-2 block text-sm font-medium text-gray-700">
+                Event Entry : Ticket
+              </label>
+              )}
             </div>
             {!eventData.isFree && (
               <>

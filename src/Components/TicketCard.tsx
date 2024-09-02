@@ -1,16 +1,28 @@
-import { FC, useState, useEffect, ChangeEvent } from "react";
+import { FC, useState, useEffect, ChangeEvent, CSSProperties } from "react";
 import { useDispatch } from "react-redux";
 import { userTickets, cancelTicket } from "../services/ticket";
 import { Pagination } from "flowbite-react";
 import { confirmAlert } from "react-confirm-alert";
 import { downloadTicket } from "../services/ticket";
 import { toast } from "sonner";
+import ScaleLoader from "react-spinners/ScaleLoader";
+
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "black",
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+};
 
 const TicketCard: FC = () => {
   const [tickets, setTickets] = useState<any[]>([]);
   const [filteredTickets, setFilteredTickets] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
+  const [loading, setLoading] = useState<boolean>(false);
   const [ticketsPerPage] = useState<number>(2);
   const dispatch = useDispatch();
 
@@ -67,8 +79,10 @@ const TicketCard: FC = () => {
           label: "Yes",
           onClick: async () => {
             try {
+              setLoading(true)
               const cancelData = { ticketId };
               const result = await cancelTicket(cancelData, dispatch);
+              setLoading(false)
               if (result.status === "success") {
                 toast.success(result.message);
                 fetchTickets();
@@ -208,6 +222,17 @@ const TicketCard: FC = () => {
                     </p>
                   )}
                 </div>
+                {loading && (
+                  <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+                    <ScaleLoader
+                      color="black"
+                      loading={loading}
+                      cssOverride={override}
+                      aria-label="Loading Spinner"
+                      data-testid="loader"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           ))}
