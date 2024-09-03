@@ -34,7 +34,7 @@ export const Login: FC = () => {
   const dispatch = useDispatch()
   useEffect(() => {
        if(user){
-          navigate('/')
+          navigate('/home')
        }
   },[])
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -55,7 +55,7 @@ export const Login: FC = () => {
     setState({ ...state, loading: false });
     if (result.status === "success") {
       dispatch(userLogin({user:result.user,token:result.token}))
-      navigate("/");
+      navigate("/home");
     }
   };
 
@@ -68,7 +68,7 @@ export const Login: FC = () => {
     setState({ ...state, loading: false });
     if (result.status === "success") {
       dispatch(userLogin({user:result.user,token:result.token}))
-      navigate("/");
+      navigate("/home");
     }
   }
 

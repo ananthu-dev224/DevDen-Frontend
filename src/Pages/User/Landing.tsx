@@ -1,23 +1,24 @@
 import { FC, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import Card from "../../Components/Card";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { getEvents } from "../../services/event";
+import { getAllEvents } from "../../services/event";
 import { calculatePostedTime } from "../../utils/postedTime";
 import { ClipLoader } from "react-spinners";
 
-const Home: FC = () => {
+const Landing: FC = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);
-
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await getEvents(dispatch);
+        const response = await getAllEvents(dispatch);
         if (response.status === "success") {
           setEvents(response.events);
         } else {
@@ -34,6 +35,12 @@ const Home: FC = () => {
     fetchEvents();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      navigate("/home");
+    }
+  }, []);
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center min-h-screen">
@@ -44,8 +51,6 @@ const Home: FC = () => {
       </div>
     );
   }
-
-
   return (
     <div className="flex bg-gray-200 min-h-screen">
       <Navbar />
@@ -55,10 +60,6 @@ const Home: FC = () => {
           {events.map((event) => {
             const createdAtDate = new Date(event.createdAt);
             const postedTime = calculatePostedTime(createdAtDate);
-            const username =
-              user.username === event.hostId.username
-                ? `${event.hostId.username} (You)`
-                : event.hostId.username;
             return (
               <Card
                 eventId={event._id}
@@ -68,7 +69,7 @@ const Home: FC = () => {
                 time={event.time}
                 isFree={event.isFree}
                 userProfileImage={event.hostId.dp}
-                username={username}
+                username={event.hostId.username}
                 venue={event.venue}
                 ticketPrice={event.ticketPrice}
                 ticketsLeft={event.totalTickets}
@@ -84,4 +85,4 @@ const Home: FC = () => {
   );
 };
 
-export default Home;
+export default Landing;

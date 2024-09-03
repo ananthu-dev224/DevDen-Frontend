@@ -100,7 +100,7 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
     if (result.status === "success") {
       dispatch(userLogin({user:result.newUser,token:result.token}))
       onRequestClose();
-      navigate("/");
+      navigate("/home");
     }
   };
 

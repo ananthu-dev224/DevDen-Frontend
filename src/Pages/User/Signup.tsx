@@ -33,7 +33,7 @@ export const Signup: FC = () => {
 
   useEffect(() => {
          if(user){
-          navigate('/')
+          navigate('/home')
          }
   },[])
 

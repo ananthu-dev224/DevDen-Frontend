@@ -29,6 +29,7 @@ import Chat from "./Pages/User/Chat";
 import Notifications from "./Pages/User/Notifications";
 import CommentReport from "./Pages/Admin/CommentReport";
 import EventReport from "./Pages/Admin/EventReport";
+import Landing from "./Pages/User/Landing";
 // Protected
 import AdminProtected from "./routes/adminProtected";
 import UserProtected from "./routes/userProtected";
@@ -43,7 +44,8 @@ const App: FC = () => {
           <Router>
             <Routes>
               <Route path="*" element={<Page404 />} />
-              <Route path="/" element={<UserProtected><Home /></UserProtected>} />
+              <Route path="/" element={<Landing />} />
+              <Route path="/home" element={<UserProtected><Home /></UserProtected>} />
               <Route path="/profile" element={<UserProtected><Profile /></UserProtected>} />
               <Route path="/profile/:userId" element={<UserProtected><OtherProfile /></UserProtected>} />
               <Route path="/create-event" element={<UserProtected><CreateEvent /></UserProtected>} />

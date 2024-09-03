@@ -13,7 +13,7 @@ import { confirmAlert } from 'react-confirm-alert';
 import {toast} from 'sonner'
 import socket from "../config/socket";
 import { useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import {useDispatch } from "react-redux";
 import { userLogout } from "../redux/reducers/userSlice";
 import { NavItemProps } from "../types/type";
 
@@ -21,13 +21,7 @@ import { NavItemProps } from "../types/type";
 const Navbar: FC = (): ReactElement => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
-  const user = useSelector((state:any) => state.user.user)
-  useEffect(() => {
-        if(!user){
-            navigate('/login')
-        }
-  },[])
-
+  
   const handleLogout  = () => {
     confirmAlert({
       title: 'Confirm to logout',
@@ -54,7 +48,7 @@ const Navbar: FC = (): ReactElement => {
             <img src={logo} alt="Logo" className="w-full object-contain" />
           </div>
           <div className="flex flex-col items-center mt-10 space-y-4 overflow-hiddenz ">
-            <NavItem icon={<HomeIcon />} text="Home" handleClick={() => navigate('/')}  />
+            <NavItem icon={<HomeIcon />} text="Home" handleClick={() => navigate('/home')}  />
             <NavItem icon={<Explore />} text="Explore" handleClick={() => navigate('/explore')} />
             <NavItem icon={<Host />} text="Create Event" handleClick={() => navigate('/create-event')} />
             <div className="relative">
@@ -72,7 +66,7 @@ const Navbar: FC = (): ReactElement => {
           </div>
         </nav>
         <div className="md:hidden fixed bottom-0 left-0 w-full bg-white py-2 border-t border-gray-300 flex justify-around">
-          <HomeIcon fn={() => navigate('/')} />
+          <HomeIcon fn={() => navigate('/home')} />
           <Explore  fn={() => navigate('/explore')} />
           <Host  fn={() => navigate('/create-event')} />
           <Notification fn={() => navigate('/notifications')} />       
