@@ -6,6 +6,7 @@ import { getNotifications, clearNoti } from "../../services/notifications";
 import { formatTimestamp } from "../../utils/chatTime";
 import { confirmAlert } from "react-confirm-alert";
 import ScaleLoader from "react-spinners/ScaleLoader";
+import NotiSkeleton from "../../Components/Skeletons/Noti";
 import { toast } from "sonner";
 
 const override: CSSProperties = {
@@ -26,10 +27,12 @@ const Notifications: FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [notiLoading, setNotiLoading] = useState<boolean>(true);
   const dispatch = useDispatch();
 
   const fetchNoti = async () => {
     const res = await getNotifications(dispatch);
+    setNotiLoading(false);
     if (res.status === "success") {
       setNotifications(res.notifications);
       setHistory(res.history);
@@ -107,6 +110,13 @@ const Notifications: FC = () => {
                   className="space-y-4 overflow-y-auto scrollbar-hide"
                   style={{ maxHeight: "calc(95vh - 200px)" }}
                 >
+                  {notiLoading && (
+                    <>
+                      {Array.from({ length: 10 }).map((_, index) => (
+                        <NotiSkeleton key={index} />
+                      ))}
+                    </>
+                  )}
                   {notifications.length > 0 ? (
                     notifications.map((noti) => (
                       <div
@@ -131,6 +141,13 @@ const Notifications: FC = () => {
                   className="space-y-4 overflow-y-auto scrollbar-hide"
                   style={{ maxHeight: "calc(95vh - 200px)" }}
                 >
+                   {notiLoading && (
+                    <>
+                      {Array.from({ length: 10 }).map((_, index) => (
+                        <NotiSkeleton key={index} />
+                      ))}
+                    </>
+                  )}
                   {history.length > 0 ? (
                     <div>
                       <p className="text-sm text-gray-500">

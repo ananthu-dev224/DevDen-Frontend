@@ -3,21 +3,27 @@ import pfp from "../assets/pfp.jpeg";
 import { getConversationUser } from "../services/chat";
 import { useDispatch } from "react-redux";
 import { formatTimestamp } from "../utils/chatTime";
+import ChatSkeleton from "./Skeletons/ChatSkeleton";
 
 interface ChatSidebarProps {
   userId: string;
   onSelectConversation: (conversationId: string, memberId: string) => void;
 }
 
-const ChatSidebar: FC<ChatSidebarProps> = ({ userId, onSelectConversation }) => {
+const ChatSidebar: FC<ChatSidebarProps> = ({
+  userId,
+  onSelectConversation,
+}) => {
   const [conversations, setConversations] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
   const dispatch = useDispatch();
 
   const fetchConversations = useCallback(async () => {
     try {
       const response = await getConversationUser(userId, dispatch);
+      setLoading(false);
       const fetchedConv = response.conversation;
       setConversations(fetchedConv);
     } catch (error) {
@@ -56,7 +62,14 @@ const ChatSidebar: FC<ChatSidebarProps> = ({ userId, onSelectConversation }) => 
       </div>
 
       <h2 className="text-xl font-bold mb-4">Chats</h2>
-      <ul className="space-y-4 max-h-[calc(100vh-240px)] overflow-y-auto">
+      <ul className="space-y-4 max-h-[calc(100vh-240px)] overflow-y-auto scrollbar-hide">
+        {loading && (
+          <>
+            {Array.from({ length: 10 }).map((_, index) => (
+              <ChatSkeleton key={index} />
+            ))}
+          </>
+        )}
         {filteredConversations.map((conversation) => {
           const otherMembers = conversation.members.filter(
             (member: any) => member._id !== userId
@@ -92,9 +105,5 @@ const ChatSidebar: FC<ChatSidebarProps> = ({ userId, onSelectConversation }) => 
     </div>
   );
 };
-
-
-
-
 
 export default ChatSidebar;

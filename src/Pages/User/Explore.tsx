@@ -8,6 +8,8 @@ import { getAllEvents } from "../../services/event";
 import Card from "../../Components/Card";
 import pfp from "../../assets/pfp.jpeg";
 import { calculatePostedTime } from "../../utils/postedTime";
+import EventCardSkeleton from "../../Components/Skeletons/ExploreCard";
+import { Link } from "react-router-dom";
 
 const Explore: FC = () => {
   const [search, setSearch] = useState<string>("");
@@ -15,6 +17,7 @@ const Explore: FC = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [clickedEvent, setClickedEvent] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [eventLoading, setEventLoading] = useState<boolean>(true);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -24,10 +27,11 @@ const Explore: FC = () => {
         setEvents(res.events);
       }
       setLoading(false);
+      setEventLoading(false);
     };
 
     fetchEvents();
-  }, []);
+  }, [dispatch]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -50,7 +54,10 @@ const Explore: FC = () => {
   };
 
   const orderedEvents = clickedEvent
-    ? [clickedEvent, ...events.filter((event) => event._id !== clickedEvent._id)]
+    ? [
+        clickedEvent,
+        ...events.filter((event) => event._id !== clickedEvent._id),
+      ]
     : events;
 
   return (
@@ -66,10 +73,20 @@ const Explore: FC = () => {
               className="p-2 w-full border border-gray-200 rounded focus:border-green-500 outline-none"
             />
           </div>
+          {eventLoading && (
+          <>
+            <div className="flex flex-wrap gap-4">
+              {Array.from({ length: 9 }).map((_, index) => (
+                <EventCardSkeleton key={index} />
+              ))}
+            </div>
+          </>
+        )}
           {loading && <div>Searching...</div>}
           {search.length > 2 && users.length > 0 ? (
             <div className="space-y-4">
               {users.map((user) => (
+                <Link to={`/profile/${user._id}`}>
                 <div
                   key={user._id}
                   className="flex items-center border-b border-gray-300 p-2"
@@ -84,38 +101,42 @@ const Explore: FC = () => {
                     <div className="text-gray-500">{user.name}</div>
                   </div>
                 </div>
+                </Link>
               ))}
             </div>
           ) : (
             <div>
-              {clickedEvent  ? (
-              <>
-              <button onClick={() => setClickedEvent(null)} className="mb-4">
-                <FaArrowLeft />
-              </button>
-              {orderedEvents.map((event) => (
-                <div key={event._id} className="mb-5">
-                  <Card
-                    eventId={event._id}
-                    date={event.date}
-                    postedTime={calculatePostedTime(
-                      new Date(event.createdAt)
-                    )}
-                    time={event.time}
-                    isFree={event.isFree}
-                    userProfileImage={event.hostId.dp}
-                    username={event.hostId.username}
-                    venue={event.venue}
-                    ticketPrice={event.ticketPrice}
-                    ticketsLeft={event.totalTickets}
-                    likeCount={event.likes}
-                    image={event.image}
-                    description={event.description}
-                    isProfile={true}
-                  />
-                </div>
-              ))}
-            </>
+              {clickedEvent ? (
+                <>
+                  <button
+                    onClick={() => setClickedEvent(null)}
+                    className="mb-4"
+                  >
+                    <FaArrowLeft />
+                  </button>
+                  {orderedEvents.map((event) => (
+                    <div key={event._id} className="mb-5">
+                      <Card
+                        eventId={event._id}
+                        date={event.date}
+                        postedTime={calculatePostedTime(
+                          new Date(event.createdAt)
+                        )}
+                        time={event.time}
+                        isFree={event.isFree}
+                        userProfileImage={event.hostId.dp}
+                        username={event.hostId.username}
+                        venue={event.venue}
+                        ticketPrice={event.ticketPrice}
+                        ticketsLeft={event.totalTickets}
+                        likeCount={event.likes}
+                        image={event.image}
+                        description={event.description}
+                        isProfile={true}
+                      />
+                    </div>
+                  ))}
+                </>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4 mt-5">
                   {events.length === 0 && (
@@ -126,18 +147,23 @@ const Explore: FC = () => {
                     </div>
                   )}
                   {events.map((event) => (
-                      <div key={event._id} className="relative cursor-pointer">
+                    <div key={event._id} className="relative cursor-pointer">
                       <img
                         src={event.image}
                         alt={event.date}
                         className="w-full h-full object-cover"
                         onClick={() => handleEventClick(event)}
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity" onClick={() =>handleEventClick(event)}>
+                      <div
+                        className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity"
+                        onClick={() => handleEventClick(event)}
+                      >
                         <span className="text-white text-lg font-semibold">
                           {event.likes.length}
                         </span>
-                        <p className="text-white ml-2"><FaHeart /></p>
+                        <p className="text-white ml-2">
+                          <FaHeart />
+                        </p>
                       </div>
                     </div>
                   ))}

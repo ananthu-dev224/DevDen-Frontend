@@ -3,7 +3,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../../Components/Navbar";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
-import { getUserDetails, getFollowers, getFollowing, follow, unfollow } from "../../services/network";
+import {
+  getUserDetails,
+  getFollowers,
+  getFollowing,
+  follow,
+  unfollow,
+} from "../../services/network";
 import {
   FaCalendarAlt,
   FaLink,
@@ -17,6 +23,7 @@ import ListNetwork from "../../Components/ListNetwork";
 import { addConversation } from "../../services/chat";
 import { toast } from "sonner";
 import { calculatePostedTime } from "../../utils/postedTime";
+import { ClipLoader } from "react-spinners";
 
 const OtherProfile: FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -25,8 +32,11 @@ const OtherProfile: FC = () => {
   const [followers, setFollowers] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
   const [isListNetworkOpen, setListNetworkOpen] = useState(false);
-  const [listNetworkType, setListNetworkType] = useState<'followers' | 'following'>('followers');
+  const [listNetworkType, setListNetworkType] = useState<
+    "followers" | "following"
+  >("followers");
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const activeUser = useSelector((store: any) => store.user.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -36,10 +46,10 @@ const OtherProfile: FC = () => {
       toast.error("User not available, try again...");
       return;
     }
-    
-    if(userId === activeUser._id){
-        navigate('/profile')
-        return;
+
+    if (userId === activeUser._id) {
+      navigate("/profile");
+      return;
     }
 
     try {
@@ -55,19 +65,19 @@ const OtherProfile: FC = () => {
 
   const fetchFollowersAndFollowing = async () => {
     if (!userId) {
-        toast.error("User not available, try again...");
-        return;
+      toast.error("User not available, try again...");
+      return;
     }
     try {
       const followersResponse = await getFollowers(userId, dispatch);
       const followingResponse = await getFollowing(userId, dispatch);
-  
+
       if (followersResponse.status === "success") {
         setFollowers(followersResponse.followers);
       } else {
         toast.error("Failed to fetch followers");
       }
-  
+
       if (followingResponse.status === "success") {
         setFollowing(followingResponse.following);
       } else {
@@ -75,32 +85,36 @@ const OtherProfile: FC = () => {
       }
 
       // Check if the active user is following this profile
-      const isFollowing = followersResponse.followers.some((follower: any) => follower._id === activeUser._id);
+      const isFollowing = followersResponse.followers.some(
+        (follower: any) => follower._id === activeUser._id
+      );
       setIsFollowing(isFollowing);
-
     } catch (error) {
       console.error("Error fetching followers and following", error);
+    } finally {
+      setLoading(false);
     }
   };
 
- 
   const handleFollowToggle = async () => {
     if (!userId) {
-        toast.error("User not available, try again...");
-        return;
+      toast.error("User not available, try again...");
+      return;
     }
     try {
       if (isFollowing) {
-        const unfollowRes = await unfollow({followerId:userId}, dispatch);
-        if(unfollowRes.status === 'success'){
-            toast.success("Unfollowed successfully");
-            setFollowers(prev => prev.filter(follower => follower._id !== activeUser._id));
+        const unfollowRes = await unfollow({ followerId: userId }, dispatch);
+        if (unfollowRes.status === "success") {
+          toast.success("Unfollowed successfully");
+          setFollowers((prev) =>
+            prev.filter((follower) => follower._id !== activeUser._id)
+          );
         }
       } else {
-        const followRes = await follow({followerId:userId}, dispatch);
-        if(followRes.status === 'success'){
-            toast.success("Followed successfully");
-            setFollowers(prev => [...prev, activeUser]);
+        const followRes = await follow({ followerId: userId }, dispatch);
+        if (followRes.status === "success") {
+          toast.success("Followed successfully");
+          setFollowers((prev) => [...prev, activeUser]);
         }
       }
       setIsFollowing(!isFollowing);
@@ -115,8 +129,7 @@ const OtherProfile: FC = () => {
     fetchFollowersAndFollowing();
   }, [userId]);
 
-  
-  const openListNetwork = (type: 'followers' | 'following') => {
+  const openListNetwork = (type: "followers" | "following") => {
     setListNetworkType(type);
     setListNetworkOpen(true);
   };
@@ -124,14 +137,25 @@ const OtherProfile: FC = () => {
   const closeListNetwork = () => setListNetworkOpen(false);
 
   const handleMessage = async () => {
-      const data = {
-         recieverId : userId
-      }
-      console.log(data)
-      const res = await addConversation(data,dispatch);
-      if(res.status === 'success'){
-        navigate(`/chat?conversationId=${res.conversation._id}`)
-      }
+    const data = {
+      recieverId: userId,
+    };
+    console.log(data);
+    const res = await addConversation(data, dispatch);
+    if (res.status === "success") {
+      navigate(`/chat?conversationId=${res.conversation._id}`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <h1 className="mb-5 font-semibold text-gray-800">
+          DEVDEN - CONNECT & COLLABORATE
+        </h1>
+        <ClipLoader color="black" loading={loading} size={50} />
+      </div>
+    );
   }
 
   return (
@@ -158,10 +182,16 @@ const OtherProfile: FC = () => {
               @{user?.username}
             </h1>
             <div className="flex space-x-4 mt-2">
-            <span onClick={() => openListNetwork('followers')} className="cursor-pointer">
+              <span
+                onClick={() => openListNetwork("followers")}
+                className="cursor-pointer"
+              >
                 <strong>{followers.length}</strong> Followers
               </span>
-              <span onClick={() => openListNetwork('following')} className="cursor-pointer">
+              <span
+                onClick={() => openListNetwork("following")}
+                className="cursor-pointer"
+              >
                 <strong>{following.length}</strong> Following
               </span>
               <span>
@@ -169,20 +199,20 @@ const OtherProfile: FC = () => {
               </span>
             </div>
             <div>
-            <button
-              className="mt-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-full"
-              onClick={handleFollowToggle}
-            >
-              {isFollowing ? "Unfollow" : "Follow"}
-            </button>
-            {isFollowing && (
-                <button
-                onClick={handleMessage}
-                className="mt-2 ml-3 px-4 py-2 text-green-800 ring-1 ring-green-800 font-semibold rounded-full"
+              <button
+                className="mt-2 px-4 py-2 bg-gray-900 text-white font-semibold rounded-full"
+                onClick={handleFollowToggle}
               >
-                Message
+                {isFollowing ? "Unfollow" : "Follow"}
               </button>
-            )}
+              {isFollowing && (
+                <button
+                  onClick={handleMessage}
+                  className="mt-2 ml-3 px-4 py-2 text-green-800 ring-1 ring-green-800 font-semibold rounded-full"
+                >
+                  Message
+                </button>
+              )}
             </div>
           </div>
           <div className="px-4 md:px-0">
@@ -265,15 +295,14 @@ const OtherProfile: FC = () => {
                   );
                 })}
               </TabPanel>
-            
             </TabPanels>
           </TabGroup>
         </div>
         <ListNetwork
           isOpen={isListNetworkOpen}
           onClose={closeListNetwork}
-          followers={listNetworkType === 'followers' ? followers : []}
-          following={listNetworkType === 'following' ? following : []}
+          followers={listNetworkType === "followers" ? followers : []}
+          following={listNetworkType === "following" ? following : []}
         />
       </div>
     </div>

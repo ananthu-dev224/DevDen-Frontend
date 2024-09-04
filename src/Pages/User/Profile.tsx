@@ -22,6 +22,8 @@ import { getFollowers, getFollowing } from "../../services/network";
 import ListNetwork from "../../Components/ListNetwork";
 import { calculatePostedTime } from "../../utils/postedTime";
 import WithdrawModal from "../../Components/Withdraw";
+import { ClipLoader } from "react-spinners";
+
 
 const Profile: FC = () => {
   const [isEditProfileOpen, setEditProfileOpen] = useState(false);
@@ -37,6 +39,7 @@ const Profile: FC = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [savedEvents, setSavedEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
   const [cropShape, setCropShape] = useState<"rectangular" | "circular">(
     "rectangular"
@@ -90,6 +93,8 @@ const Profile: FC = () => {
       }
     } catch (error) {
       console.error("Error fetching followers and following", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -136,6 +141,17 @@ const Profile: FC = () => {
     setCropperOpen(false);
     setImageToCrop("");
   };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <h1 className="mb-5 font-semibold text-gray-800">
+          DEVDEN - CONNECT & COLLABORATE
+        </h1>
+        <ClipLoader color="black" loading={loading} size={50} />
+      </div>
+    );
+  }
 
   return (
     <div className="flex bg-gray-200 min-h-screen">
@@ -262,7 +278,10 @@ const Profile: FC = () => {
               <FaWallet className="w-5 h-5" />
               <span>Balance: $ {user?.wallet}</span>
             </div>
-            <button className="text-blue-600" onClick={() => setWithdrawOpen(true)}>
+            <button
+              className="text-blue-600"
+              onClick={() => setWithdrawOpen(true)}
+            >
               Withdraw balance?
             </button>
           </div>
@@ -408,7 +427,11 @@ const Profile: FC = () => {
           cropShape={cropShape}
         />
       </div>
-      <WithdrawModal balance={user.wallet} isOpen={isWithdrawOpen} onRequestClose={closeWithdraw} />
+      <WithdrawModal
+        balance={user.wallet}
+        isOpen={isWithdrawOpen}
+        onRequestClose={closeWithdraw}
+      />
     </div>
   );
 };

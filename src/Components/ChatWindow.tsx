@@ -5,9 +5,9 @@ import socket from "../config/socket";
 import { useDispatch } from "react-redux";
 import { getMessage, addMessage, deleteMessage } from "../services/chat";
 import { formatTimestamp } from "../utils/chatTime";
-import { confirmAlert } from 'react-confirm-alert';
+import { confirmAlert } from "react-confirm-alert";
 import { Link } from "react-router-dom";
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 interface ChatWindowProps {
   userId: string;
@@ -48,7 +48,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
         const response = await getMessage(conversationId, dispatch);
         if (response.status === "success") {
           setMessages(response.messages);
-          console.log(messages)
+          console.log(messages);
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -75,9 +75,18 @@ const ChatWindow: FC<ChatWindowProps> = ({
       setIsTyping(false);
     });
 
+    // Listen for deleteMessage event
+    socket.on("deleteMessage", (data) => {
+      console.log("Delete message event:",data)
+      setMessages((prevMessages) =>
+        prevMessages.filter((message) => message._id !== data._id)
+      );
+    });
+
     return () => {
       socket.emit("leaveConversation", data);
       socket.off("message");
+      socket.off("deleteMessage");
     };
   }, [conversationId]);
 
@@ -96,38 +105,15 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const handleSendMessage = async () => {
     handleStopTyping();
     if (messageText.trim() === "") return;
-    
-    const tempId = uuidv4();
-    
-    const newMessage = {
-      _id: tempId,
-      conversationId,
-      senderId: userId,
-      text: messageText,
-      createdAt: new Date(),
-    };
-
-    socket.emit("sendMessage", newMessage);
-
     const res = await addMessage(
       { conversationId, text: messageText },
       dispatch
     );
     if (res.status === "success") {
-      // Replace the temporary message with the real one in the state
-      setMessages((prevMessages) =>
-        prevMessages.map((message) =>
-          message._id === tempId
-            ? { ...message, _id: res.message._id}
-            : message
-        )
-      );
+      socket.emit("sendMessage", res.message);
       setMessageText("");
     } else {
-      setMessages((prevMessages) =>
-        prevMessages.filter((message) => message._id !== tempId)
-      );
-      console.error("Failed to save message to database");
+      console.error("Failed to send message to user");
     }
   };
 
@@ -141,7 +127,6 @@ const ChatWindow: FC<ChatWindowProps> = ({
       setClickedMessageId((prevMessageId) =>
         prevMessageId === messageId ? null : messageId
       );
-      console.log(clickedMessageId);
     }
   };
 
@@ -152,21 +137,30 @@ const ChatWindow: FC<ChatWindowProps> = ({
         prevMessages.filter((message) => message._id !== messageId)
       );
     }
+    const data = {
+      _id:messageId,
+      conversationId
+    }
+    socket.emit("deleteMessage",data);
   };
 
   return (
     <div className="flex-1 bg-white shadow-lg flex flex-col h-full">
       <div className="flex justify-between items-center p-4 border-b border-gray-200">
-      <Link to={`/profile/${selectedUser._id}`} >
-        <div className="flex items-center space-x-4">
-          <img src={selectedUser.dp || pfp} alt="Profile" className="w-10 h-10 rounded-full" />
-          <div>
-            <h2 className="text-xl font-bold">{selectedUser.name}</h2>
-            <span className="text-sm text-gray-500">
-              @{selectedUser.username}
-            </span>
+        <Link to={`/profile/${selectedUser._id}`}>
+          <div className="flex items-center space-x-4">
+            <img
+              src={selectedUser.dp || pfp}
+              alt="Profile"
+              className="w-10 h-10 rounded-full"
+            />
+            <div>
+              <h2 className="text-xl font-bold">{selectedUser.name}</h2>
+              <span className="text-sm text-gray-500">
+                @{selectedUser.username}
+              </span>
+            </div>
           </div>
-        </div>
         </Link>
         <div className="flex space-x-4">
           <FaPhone
@@ -208,19 +202,19 @@ const ChatWindow: FC<ChatWindowProps> = ({
                   className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
                   onClick={() => {
                     confirmAlert({
-                      title: 'Confirm to Delete Message',
-                      message: 'Are you sure?',
+                      title: "Confirm to Delete Message",
+                      message: "Are you sure?",
                       buttons: [
                         {
-                          label: 'Yes',
+                          label: "Yes",
                           onClick: () => {
                             handleDeleteMessage(message._id);
-                          }
+                          },
                         },
                         {
-                          label: 'No',
-                        }
-                      ]
+                          label: "No",
+                        },
+                      ],
                     });
                   }}
                   size={15}
