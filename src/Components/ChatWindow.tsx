@@ -1,5 +1,12 @@
 import { FC, useState, useEffect, useRef } from "react";
-import { FaPhone, FaVideo, FaTrash, FaPaperPlane } from "react-icons/fa";
+import {
+  FaPhone,
+  FaVideo,
+  FaTrash,
+  FaPaperPlane,
+  FaReply,
+} from "react-icons/fa";
+import { IoClose } from "react-icons/io5";
 import pfp from "../assets/pfp.jpeg";
 import socket from "../config/socket";
 import { useDispatch } from "react-redux";
@@ -7,7 +14,6 @@ import { getMessage, addMessage, deleteMessage } from "../services/chat";
 import { formatTimestamp } from "../utils/chatTime";
 import { confirmAlert } from "react-confirm-alert";
 import { Link } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
 
 interface ChatWindowProps {
   userId: string;
@@ -24,6 +30,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const [messageText, setMessageText] = useState("");
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [clickedMessageId, setClickedMessageId] = useState<string | null>(null);
+  const [replyMessage, setReplyMessage] = useState<any | null>(null);
   const dispatch = useDispatch();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +55,6 @@ const ChatWindow: FC<ChatWindowProps> = ({
         const response = await getMessage(conversationId, dispatch);
         if (response.status === "success") {
           setMessages(response.messages);
-          console.log(messages);
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -77,7 +83,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
 
     // Listen for deleteMessage event
     socket.on("deleteMessage", (data) => {
-      console.log("Delete message event:",data)
+      console.log("Delete message event:", data);
       setMessages((prevMessages) =>
         prevMessages.filter((message) => message._id !== data._id)
       );
@@ -106,12 +112,13 @@ const ChatWindow: FC<ChatWindowProps> = ({
     handleStopTyping();
     if (messageText.trim() === "") return;
     const res = await addMessage(
-      { conversationId, text: messageText },
+      { conversationId, text: messageText, replyTo: replyMessage },
       dispatch
     );
     if (res.status === "success") {
       socket.emit("sendMessage", res.message);
       setMessageText("");
+      setReplyMessage(null);
     } else {
       console.error("Failed to send message to user");
     }
@@ -122,11 +129,13 @@ const ChatWindow: FC<ChatWindowProps> = ({
     handleTyping();
   };
 
-  const handleClickMessage = (messageId: string, senderId: string) => {
+  const handleClickMessage = (message: any, senderId: string) => {
     if (senderId === userId) {
       setClickedMessageId((prevMessageId) =>
-        prevMessageId === messageId ? null : messageId
+        prevMessageId === message._id ? null : message._id
       );
+    } else {
+      setReplyMessage(message);
     }
   };
 
@@ -138,10 +147,10 @@ const ChatWindow: FC<ChatWindowProps> = ({
       );
     }
     const data = {
-      _id:messageId,
-      conversationId
-    }
-    socket.emit("deleteMessage",data);
+      _id: messageId,
+      conversationId,
+    };
+    socket.emit("deleteMessage", data);
   };
 
   return (
@@ -187,7 +196,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
               key={index}
               onClick={() =>
                 handleClickMessage(
-                  message._id,
+                  message,
                   message.senderId._id || message.senderId
                 )
               }
@@ -198,35 +207,55 @@ const ChatWindow: FC<ChatWindowProps> = ({
               }`}
             >
               {clickedMessageId === message._id && (
-                <FaTrash
-                  className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
-                  onClick={() => {
-                    confirmAlert({
-                      title: "Confirm to Delete Message",
-                      message: "Are you sure?",
-                      buttons: [
-                        {
-                          label: "Yes",
-                          onClick: () => {
-                            handleDeleteMessage(message._id);
+                <>
+                  <FaReply
+                    className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
+                    onClick={() => setReplyMessage(message)}
+                  />
+                  <FaTrash
+                    className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
+                    onClick={() => {
+                      confirmAlert({
+                        title: "Confirm to Delete Message",
+                        message: "Are you sure?",
+                        buttons: [
+                          {
+                            label: "Yes",
+                            onClick: () => {
+                              handleDeleteMessage(message._id);
+                            },
                           },
-                        },
-                        {
-                          label: "No",
-                        },
-                      ],
-                    });
-                  }}
-                  size={15}
-                />
+                          {
+                            label: "No",
+                          },
+                        ],
+                      });
+                    }}
+                    size={15}
+                  />
+                </>
               )}
               <div
                 className={`p-3 rounded-lg max-w-xs ${
                   message.senderId === userId || message.senderId._id === userId
-                    ? "bg-gray-900 text-white"
+                    ? "bg-gray-600 text-white"
                     : "bg-gray-200"
                 }`}
               >
+                {message.replyTo && (
+                  <div
+                    className={`mb-2 p-2 rounded-lg ${
+                      message.senderId === userId ||
+                      message.senderId._id === userId
+                        ? "bg-gray-700 text-gray-300"
+                        : "bg-gray-300 text-gray-700"
+                    }`}
+                  >
+                    <span className="ml-1 text-sm">
+                      {message.replyTo.text}
+                    </span>
+                  </div>
+                )}
                 {message.text}
               </div>
             </div>
@@ -243,6 +272,29 @@ const ChatWindow: FC<ChatWindowProps> = ({
           </div>
         )}
       </div>
+      {replyMessage && (
+        <>
+          <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
+            <p className="text-gray-400 font-semibold">Reply To :</p>
+            <p
+              className={`p-3 rounded-lg max-w-xs ${
+                replyMessage.senderId === userId ||
+                replyMessage.senderId._id === userId
+                  ? "bg-gray-900 text-white"
+                  : "bg-gray-200"
+              }`}
+            >
+              {replyMessage.text}
+            </p>
+            <div
+              className="cursor-pointer"
+              onClick={() => setReplyMessage(null)}
+            >
+              <IoClose />
+            </div>
+          </div>
+        </>
+      )}
       <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
         <input
           type="text"

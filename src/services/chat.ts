@@ -71,7 +71,7 @@ export const getConversation = async (convId:any,dispatch:any): Promise<any> => 
 };
 
 // Add message : /user/message
-export const addMessage = async (data:{conversationId:any,text:any},dispatch:any): Promise<any> => {
+export const addMessage = async (data:{conversationId:any,text:any,replyTo: any},dispatch:any): Promise<any> => {
     try {
       const response = await api.post("/user/message",data);
       return response.data;
