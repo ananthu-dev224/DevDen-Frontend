@@ -28,9 +28,9 @@ export const addEvent = async (eventData: eventData,dispatch:any): Promise<any> 
 };
 
 // get events : /user/events
-export const getEvents = async (dispatch:any): Promise<any> => {
+export const getEvents = async (dispatch:any,page: number = 1): Promise<any> => {
     try {
-      const response = await api.get("/user/events");
+      const response = await api.get(`/user/events?page=${page}`);
       return response.data;
     } catch (error: any) {
       if (error.response) {

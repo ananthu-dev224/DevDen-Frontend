@@ -1,11 +1,5 @@
 import { FC, useState, useEffect, useRef } from "react";
-import {
-  FaPhone,
-  FaVideo,
-  FaTrash,
-  FaPaperPlane,
-  FaReply,
-} from "react-icons/fa";
+import { FaVideo, FaTrash, FaPaperPlane, FaReply } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import pfp from "../assets/pfp.jpeg";
 import socket from "../config/socket";
@@ -14,6 +8,7 @@ import { getMessage, addMessage, deleteMessage } from "../services/chat";
 import { formatTimestamp } from "../utils/chatTime";
 import { confirmAlert } from "react-confirm-alert";
 import { Link } from "react-router-dom";
+import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 
 interface ChatWindowProps {
   userId: string;
@@ -33,6 +28,81 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const [replyMessage, setReplyMessage] = useState<any | null>(null);
   const dispatch = useDispatch();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [incomingCall, setIncomingCall] = useState(false);
+  const [callConversationId, setCallConversationId] = useState(null);
+  const [inCall, setInCall] = useState<boolean>(false);
+  const containerRef = useRef(null);
+
+  let isHandlingIncomingCall = false;
+
+  const startVideoCall = async () => {
+    // Emit a call request to the recipient
+    socket.emit("startCall", { conversationId, userId });
+
+    // Start the call on your end
+    const appID = 1954868278;
+    const serverSecret = import.meta.env.VITE_ZEGO_SECRET;
+    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+      appID,
+      serverSecret,
+      conversationId || "default_room",
+      userId,
+      selectedUser.username
+    );
+
+    const zego = ZegoUIKitPrebuilt.create(kitToken);
+    zego.joinRoom({
+      container: containerRef.current,
+      scenario: {
+        mode: ZegoUIKitPrebuilt.OneONoneCall,
+      },
+      showScreenSharingButton: true,
+      showPreJoinView: true,
+      turnOnCameraWhenJoining: false,
+      turnOnMicrophoneWhenJoining: false,
+      showLeaveRoomConfirmDialog: true,
+      onLeaveRoom: () => setInCall(false),
+    });
+
+    setInCall(true);
+  };
+
+  const acceptCall = async () => {
+    socket.emit("acceptCall", { conversationId, userId });
+
+    // Start the call on your end
+    const appID = 1954868278;
+    const serverSecret = import.meta.env.VITE_ZEGO_SECRET;
+    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+      appID,
+      serverSecret,
+      conversationId || "default_room",
+      userId,
+      selectedUser.username
+    );
+
+    const zego = ZegoUIKitPrebuilt.create(kitToken);
+    zego.joinRoom({
+      container: containerRef.current,
+      scenario: {
+        mode: ZegoUIKitPrebuilt.OneONoneCall,
+      },
+      showScreenSharingButton: true,
+      showPreJoinView: true,
+      turnOnCameraWhenJoining: false,
+      turnOnMicrophoneWhenJoining: false,
+      showLeaveRoomConfirmDialog: true,
+      onLeaveRoom: () => setInCall(false),
+    });
+
+    setInCall(true);
+    setIncomingCall(false);
+  };
+
+  const handleDeclineCall = () => {
+    socket.emit("declineCall", { conversationId, userId });
+    setIncomingCall(false);
+  };
 
   // Scroll to bottom function
   const scrollToBottom = () => {
@@ -41,6 +111,12 @@ const ChatWindow: FC<ChatWindowProps> = ({
 
   useEffect(() => {
     if (!conversationId) return;
+
+    if (callConversationId !== conversationId) {
+      setIncomingCall(false);
+    } else {
+      setIncomingCall(true);
+    }
 
     const data = {
       conversationId,
@@ -89,10 +165,38 @@ const ChatWindow: FC<ChatWindowProps> = ({
       );
     });
 
+    const handleIncomingCall = (data: any) => {
+      const { userId, callConversationId } = data;
+      console.log(
+        `Incoming call event received: ${callConversationId} - ${conversationId}`
+      );
+      if (conversationId === callConversationId) {
+        setIncomingCall(true);
+        setCallConversationId(callConversationId);
+      } else {
+        setIncomingCall(false);
+        setCallConversationId(null);
+      }
+    };
+
+    socket.on("incomingCall", handleIncomingCall);
+
+    socket.on("callAccepted", () => {
+      setIncomingCall(false);
+    });
+
+    socket.on("callDeclined", () => {
+      setInCall(false);
+      setIncomingCall(false);
+    });
+
     return () => {
       socket.emit("leaveConversation", data);
       socket.off("message");
       socket.off("deleteMessage");
+      socket.off("incomingCall");
+      socket.off("callAccepted");
+      socket.off("callDeclined");
     };
   }, [conversationId]);
 
@@ -154,168 +258,198 @@ const ChatWindow: FC<ChatWindowProps> = ({
   };
 
   return (
-    <div className="flex-1 bg-white shadow-lg flex flex-col h-full">
-      <div className="flex justify-between items-center p-4 border-b border-gray-200">
-        <Link to={`/profile/${selectedUser._id}`}>
-          <div className="flex items-center space-x-4">
-            <img
-              src={selectedUser.dp || pfp}
-              alt="Profile"
-              className="w-10 h-10 rounded-full"
-            />
-            <div>
-              <h2 className="text-xl font-bold">{selectedUser.name}</h2>
-              <span className="text-sm text-gray-500">
-                @{selectedUser.username}
-              </span>
-            </div>
-          </div>
-        </Link>
-        <div className="flex space-x-4">
-          <FaPhone
-            className="text-gray-500 cursor-pointer hover:text-gray-800"
-            size={20}
-          />
-          <FaVideo
-            className="text-gray-500 cursor-pointer hover:text-gray-800"
-            size={20}
-          />
+    <>
+      {inCall ? (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            ref={containerRef}
+            className="relative w-full max-w-screen-md h-full max-h-screen-md bg-white rounded-lg shadow-lg"
+          ></div>
+          <div className="absolute inset-0 bg-black opacity-50 blur-md"></div>
         </div>
-      </div>
+      ) : null}
 
-      <div
-        className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
-        style={{ maxHeight: "calc(93vh - 200px)" }}
-      >
-        {messages.map((message, index) => (
-          <>
-            <div className="text-center text-gray-400 text-xs my-2">
-              {formatTimestamp(message.createdAt)}
-            </div>
-            <div
-              key={index}
-              onClick={() =>
-                handleClickMessage(
-                  message,
-                  message.senderId._id || message.senderId
-                )
-              }
-              className={`flex  ${
-                message.senderId === userId || message.senderId._id === userId
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
-              {clickedMessageId === message._id && (
-                <>
-                  <FaReply
-                    className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
-                    onClick={() => setReplyMessage(message)}
-                  />
-                  <FaTrash
-                    className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
-                    onClick={() => {
-                      confirmAlert({
-                        title: "Confirm to Delete Message",
-                        message: "Are you sure?",
-                        buttons: [
-                          {
-                            label: "Yes",
-                            onClick: () => {
-                              handleDeleteMessage(message._id);
-                            },
-                          },
-                          {
-                            label: "No",
-                          },
-                        ],
-                      });
-                    }}
-                    size={15}
-                  />
-                </>
-              )}
-              <div
-                className={`p-3 rounded-lg max-w-xs ${
-                  message.senderId === userId || message.senderId._id === userId
-                    ? "bg-gray-600 text-white"
-                    : "bg-gray-200"
-                }`}
-              >
-                {message.replyTo && (
-                  <div
-                    className={`mb-2 p-2 rounded-lg ${
-                      message.senderId === userId ||
-                      message.senderId._id === userId
-                        ? "bg-gray-700 text-gray-300"
-                        : "bg-gray-300 text-gray-700"
-                    }`}
-                  >
-                    <span className="ml-1 text-sm">
-                      {message.replyTo.text}
-                    </span>
-                  </div>
-                )}
-                {message.text}
+      <div className="flex-1 bg-white shadow-lg flex flex-col h-full">
+        <div className="flex justify-between items-center p-4 border-b border-gray-200">
+          <Link to={`/profile/${selectedUser._id}`}>
+            <div className="flex items-center space-x-4">
+              <img
+                src={selectedUser.dp || pfp}
+                alt="Profile"
+                className="w-10 h-10 rounded-full"
+              />
+              <div>
+                <h2 className="text-xl font-bold">{selectedUser.name}</h2>
+                <span className="text-sm text-gray-500">
+                  @{selectedUser.username}
+                </span>
               </div>
             </div>
-          </>
-        ))}
-        <div ref={messagesEndRef} />
-        {isTyping && (
-          <div className="bg-gray-200 p-4 rounded-lg w-10 flex align-middle justify-center">
-            <div className="typing-dots">
-              <div className="typing-dot"></div>
-              <div className="typing-dot"></div>
-              <div className="typing-dot"></div>
+          </Link>
+          <div className="flex space-x-4">
+            <FaVideo
+              className="text-gray-500 cursor-pointer hover:text-gray-800"
+              size={20}
+              onClick={startVideoCall}
+            />
+          </div>
+        </div>
+        {incomingCall && !inCall && (
+          <div className="flex justify-between items-center p-4 bg-gray-100">
+            <span className="font-sans text-blue-500">
+              Incoming Call from @{selectedUser.username}
+            </span>
+            <div>
+              <button
+                className="px-2 py-2 bg-green-600 text-white font-semibold rounded-full"
+                onClick={acceptCall}
+              >
+                Accept
+              </button>
+              <button
+                className="px-2 py-2 bg-red-600 text-white font-semibold rounded-full ml-2"
+                onClick={handleDeclineCall}
+              >
+                Decline
+              </button>
             </div>
           </div>
         )}
-      </div>
-      {replyMessage && (
-        <>
-          <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
-            <p className="text-gray-400 font-semibold">Reply To :</p>
-            <p
-              className={`p-3 rounded-lg max-w-xs ${
-                replyMessage.senderId === userId ||
-                replyMessage.senderId._id === userId
-                  ? "bg-gray-900 text-white"
-                  : "bg-gray-200"
-              }`}
-            >
-              {replyMessage.text}
-            </p>
-            <div
-              className="cursor-pointer"
-              onClick={() => setReplyMessage(null)}
-            >
-              <IoClose />
+        <div
+          className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide"
+          style={{ maxHeight: "calc(93vh - 200px)" }}
+        >
+          {messages.map((message, index) => (
+            <>
+              <div className="text-center text-gray-400 text-xs my-2">
+                {formatTimestamp(message.createdAt)}
+              </div>
+              <div
+                key={index}
+                onClick={() =>
+                  handleClickMessage(
+                    message,
+                    message.senderId._id || message.senderId
+                  )
+                }
+                className={`flex  ${
+                  message.senderId === userId || message.senderId._id === userId
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
+              >
+                {clickedMessageId === message._id && (
+                  <>
+                    <FaReply
+                      className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
+                      onClick={() => setReplyMessage(message)}
+                    />
+                    <FaTrash
+                      className="  text-gray-500 flex justify-end cursor-pointer mt-4 mr-2"
+                      onClick={() => {
+                        confirmAlert({
+                          title: "Confirm to Delete Message",
+                          message: "Are you sure?",
+                          buttons: [
+                            {
+                              label: "Yes",
+                              onClick: () => {
+                                handleDeleteMessage(message._id);
+                              },
+                            },
+                            {
+                              label: "No",
+                            },
+                          ],
+                        });
+                      }}
+                      size={15}
+                    />
+                  </>
+                )}
+                <div
+                  className={`p-3 rounded-lg max-w-xs ${
+                    message.senderId === userId ||
+                    message.senderId._id === userId
+                      ? "bg-gray-600 text-white"
+                      : "bg-gray-200"
+                  }`}
+                >
+                  {message.replyTo && (
+                    <div
+                      className={`mb-2 p-2 rounded-lg ${
+                        message.senderId === userId ||
+                        message.senderId._id === userId
+                          ? "bg-gray-700 text-gray-300"
+                          : "bg-gray-300 text-gray-700"
+                      }`}
+                    >
+                      <span className="ml-1 text-sm">
+                        {message.replyTo.text}
+                      </span>
+                    </div>
+                  )}
+                  {message.text}
+                </div>
+              </div>
+            </>
+          ))}
+          <div ref={messagesEndRef} />
+          {isTyping && (
+            <div className="bg-gray-200 p-4 rounded-lg w-10 flex align-middle justify-center">
+              <div className="typing-dots">
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+                <div className="typing-dot"></div>
+              </div>
             </div>
-          </div>
-        </>
-      )}
-      <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
-        <input
-          type="text"
-          placeholder="Type a message"
-          value={messageText}
-          onBlur={handleStopTyping}
-          onChange={handleInputChange}
-          className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-        />
-        {/* <FaImage
+          )}
+        </div>
+        {replyMessage && (
+          <>
+            <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
+              <p className="text-gray-400 font-semibold">Reply To :</p>
+              <p
+                className={`p-3 rounded-lg max-w-xs ${
+                  replyMessage.senderId === userId ||
+                  replyMessage.senderId._id === userId
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-200"
+                }`}
+              >
+                {replyMessage.text}
+              </p>
+              <div
+                className="cursor-pointer"
+                onClick={() => setReplyMessage(null)}
+              >
+                <IoClose />
+              </div>
+            </div>
+          </>
+        )}
+        <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
+          <input
+            type="text"
+            placeholder="Type a message"
+            value={messageText}
+            onBlur={handleStopTyping}
+            onChange={handleInputChange}
+            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+          />
+          {/* <FaImage
           className="text-gray-500 cursor-pointer hover:text-gray-800"
           size={24}
           onClick={handleImageClick}
         /> */}
-        <FaPaperPlane
-          className="text-blue-500 cursor-pointer hover:text-blue-700"
-          size={24}
-          onClick={handleSendMessage}
-        />
+          <FaPaperPlane
+            className="text-blue-500 cursor-pointer hover:text-blue-700"
+            size={24}
+            onClick={handleSendMessage}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

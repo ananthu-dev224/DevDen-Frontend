@@ -70,6 +70,13 @@ const ChatSidebar: FC<ChatSidebarProps> = ({
             ))}
           </>
         )}
+
+        {!loading && conversations.length === 0 && (
+          <li className="flex items-center justify-center p-4 text-gray-500">
+            Connect with people and start messaging!
+          </li>
+        )}
+
         {filteredConversations.map((conversation) => {
           const otherMembers = conversation.members.filter(
             (member: any) => member._id !== userId

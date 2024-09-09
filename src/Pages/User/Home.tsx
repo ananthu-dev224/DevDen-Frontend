@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, useCallback } from "react";
 import Navbar from "../../Components/Navbar";
 import Card from "../../Components/Card";
 import { toast } from "sonner";
@@ -6,59 +6,73 @@ import { useDispatch, useSelector } from "react-redux";
 import { getEvents } from "../../services/event";
 import { calculatePostedTime } from "../../utils/postedTime";
 import { ClipLoader } from "react-spinners";
-import EventCard from "../../Components/Skeletons/EventCard";
 
 const Home: FC = () => {
   const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [page, setPage] = useState<number>(1);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
   const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);
 
+  const fetchEvents = useCallback(async (page: number) => {
+    setLoading(true);
+    try {
+      const response = await getEvents(dispatch, page);
+      if (response.status === "success") {
+        const { events: newEvents, pagination } = response;
+        console.log(`Received events for page ${page}:`, newEvents);
+        setEvents((prevEvents) => {
+          return page === 1 ? newEvents : [...prevEvents, ...newEvents];
+        });
+        setTotalPages(pagination.totalPages);
+        setHasMore(page < pagination.totalPages);
+      } else {
+        toast.error("Failed to fetch events");
+      }
+    } catch (error) {
+      console.error("Error fetching events", error);
+      toast.error("An error occurred while fetching events");
+    } finally {
+      setLoading(false);
+    }
+  }, [dispatch]);
+
+  const handleScroll = useCallback(() => {
+    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100 && !loading && hasMore) {
+      setLoading(true);
+      setTimeout(() => {
+        setPage((prevPage) => {
+          const nextPage = prevPage + 1;
+          console.log(`Fetching page ${nextPage}`);
+          fetchEvents(nextPage);
+          return nextPage;
+        });
+      }, 1000); // 1-second delay for loading animation
+    }
+  }, [loading, hasMore, fetchEvents]);
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await getEvents(dispatch);
-        if (response.status === "success") {
-          setEvents(response.events);
-        } else {
-          toast.error("Failed to fetch events");
-        }
-      } catch (error) {
-        console.error("Error fetching events", error);
-        toast.error("An error occurred while fetching events");
-      } finally {
-        setLoading(false)
-      }
+    if (!initialLoadComplete) {
+      fetchEvents(page); // Initial fetch
+      setInitialLoadComplete(true);
+    }
+  }, [fetchEvents, page, initialLoadComplete]);
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
     };
-
-    fetchEvents();
-  }, []);
-
-  // if (loading) {
-  //   return (
-  //     <div className="flex flex-col justify-center items-center min-h-screen">
-  //       <h1 className="mb-5 font-semibold text-gray-800">
-  //         DEVDEN - CONNECT & COLLABORATE
-  //       </h1>
-  //       <ClipLoader color="black" loading={loading} size={50} />
-  //     </div>
-  //   );
-  // }
-
+  }, [handleScroll]);
 
   return (
     <div className="flex bg-gray-200 min-h-screen">
       <Navbar />
       <div className="flex-1 p-4 md:p-10 ml-0 md:ml-72 overflow-auto">
         <div className="flex justify-between items-center pb-4"></div>
-        {loading ? (
-          <div className="flex flex-col space-y-10">
-            <EventCard />
-            <EventCard />
-            <EventCard />
-          </div>
-        ) : (
         <div className="flex flex-col space-y-10 pb-20 md:pb-0">
           {events.map((event) => {
             const createdAtDate = new Date(event.createdAt);
@@ -86,11 +100,16 @@ const Home: FC = () => {
               />
             );
           })}
+          {loading && (
+            <div className="flex justify-center items-center">
+              <ClipLoader color="black" loading={true} size={30} />
+            </div>
+          )}
         </div>
-        )}
       </div>
     </div>
   );
 };
+
 
 export default Home;
