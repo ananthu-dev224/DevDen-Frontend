@@ -30,10 +30,14 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
           &times;
         </button>
         <div className="max-h-[calc(100vh-4rem)] overflow-y-auto">
-          {eventTickets[0] === 'free' ? (
+          {eventTickets[0] === "free" ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
-              <h1 className="text-xl font-semibold text-gray-700">Event is free entry.</h1>
-              <p className="text-gray-500 mt-2">There is nothing to show in details 📃.</p>
+              <h1 className="text-xl font-semibold text-gray-700">
+                Event is free entry.
+              </h1>
+              <p className="text-gray-500 mt-2">
+                There is nothing to show in details 📃.
+              </p>
             </div>
           ) : (
             <>
@@ -54,7 +58,9 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
                   <tbody>
                     {eventTickets.map((ticket, index) => (
                       <tr key={index} className="border-t">
-                        <td className="border px-4 py-2">@{ticket.userId.username}</td>
+                        <td className="border px-4 py-2">
+                          @{ticket.userId.username}
+                        </td>
                         <td className="border px-4 py-2">
                           <img
                             src={ticket.userId.dp}
@@ -62,9 +68,13 @@ const EventDetailsModal: React.FC<EventDetailsModalProps> = ({
                             className="w-12 h-12 rounded-full object-cover"
                           />
                         </td>
-                        <td className="border px-4 py-2">{ticket.numberOfTickets}</td>
+                        <td className="border px-4 py-2">
+                          {ticket.numberOfTickets}
+                        </td>
                         <td className="border px-4 py-2">{ticket.status}</td>
-                        <td className="border px-4 py-2">${ticket.totalCost}</td>
+                        <td className="border px-4 py-2">
+                          ${ticket.totalCost}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

@@ -1,20 +1,22 @@
 import React, { FC, useEffect, useRef } from "react";
 import { DropdownProps } from "../types/type";
 
-
 const DotDropdown: FC<DropdownProps> = ({
   onReport,
   onClose,
   isProfile,
   onAbort,
   onDetails,
-  onEdit
+  onEdit,
 }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         onClose();
       }
     };
@@ -30,14 +32,14 @@ const DotDropdown: FC<DropdownProps> = ({
     >
       {onReport && (
         <button
-        className="block w-full text-left ring-red-400 ring-1 px-4 py-2 rounded-sm text-gray-800 hover:bg-red-500"
-        onClick={() => {
-          onReport();
-          onClose();
-        }}
-      >
-        Report Event
-      </button>
+          className="block w-full text-left ring-red-400 ring-1 px-4 py-2 rounded-sm text-gray-800 hover:bg-red-500"
+          onClick={() => {
+            onReport();
+            onClose();
+          }}
+        >
+          Report Event
+        </button>
       )}
       {isProfile && (
         <div>
@@ -79,7 +81,5 @@ const DotDropdown: FC<DropdownProps> = ({
     </div>
   );
 };
-
-
 
 export default DotDropdown;

@@ -13,35 +13,44 @@ const Home: FC = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const [initialLoadComplete, setInitialLoadComplete] = useState<boolean>(false);
+  const [initialLoadComplete, setInitialLoadComplete] =
+    useState<boolean>(false);
   const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);
 
-  const fetchEvents = useCallback(async (page: number) => {
-    setLoading(true);
-    try {
-      const response = await getEvents(dispatch, page);
-      if (response.status === "success") {
-        const { events: newEvents, pagination } = response;
-        console.log(`Received events for page ${page}:`, newEvents);
-        setEvents((prevEvents) => {
-          return page === 1 ? newEvents : [...prevEvents, ...newEvents];
-        });
-        setTotalPages(pagination.totalPages);
-        setHasMore(page < pagination.totalPages);
-      } else {
-        toast.error("Failed to fetch events");
+  const fetchEvents = useCallback(
+    async (page: number) => {
+      setLoading(true);
+      try {
+        const response = await getEvents(dispatch, page);
+        if (response.status === "success") {
+          const { events: newEvents, pagination } = response;
+          console.log(`Received events for page ${page}:`, newEvents);
+          setEvents((prevEvents) => {
+            return page === 1 ? newEvents : [...prevEvents, ...newEvents];
+          });
+          setTotalPages(pagination.totalPages);
+          setHasMore(page < pagination.totalPages);
+        } else {
+          toast.error("Failed to fetch events");
+        }
+      } catch (error) {
+        console.error("Error fetching events", error);
+        toast.error("An error occurred while fetching events");
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching events", error);
-      toast.error("An error occurred while fetching events");
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
+    },
+    [dispatch]
+  );
 
   const handleScroll = useCallback(() => {
-    if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100 && !loading && hasMore) {
+    if (
+      window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 100 &&
+      !loading &&
+      hasMore
+    ) {
       setLoading(true);
       setTimeout(() => {
         setPage((prevPage) => {
@@ -110,6 +119,5 @@ const Home: FC = () => {
     </div>
   );
 };
-
 
 export default Home;

@@ -3,9 +3,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 export const ChatSkeleton = () => {
   return (
-      <div className="w-full">
-        <Skeleton height={60} />
-      </div>
+    <div className="w-full">
+      <Skeleton height={60} />
+    </div>
   );
 };
 

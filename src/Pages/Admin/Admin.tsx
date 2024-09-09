@@ -1,10 +1,10 @@
-import { FC , useState, useEffect, CSSProperties } from "react";
-import {toast} from 'react-toastify'
+import { FC, useState, useEffect, CSSProperties } from "react";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { useDispatch , useSelector  } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../services/adminAuth";
 import { adminLogin } from "../../redux/reducers/adminSlice";
-import ScaleLoader from 'react-spinners/ScaleLoader';
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 const override: CSSProperties = {
   display: "block",
@@ -17,42 +17,41 @@ const override: CSSProperties = {
 };
 
 export const Admin: FC = () => {
-  const [email,setEmail] = useState<string>('')
-  const [password,setPassword] = useState<string>('')
-  const [loading,setLoading] = useState<boolean>(false)
-  const navigate = useNavigate()
-  const admin = useSelector((state:any) => state.admin.admin)
-  const dispatch = useDispatch()
-  
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const admin = useSelector((state: any) => state.admin.admin);
+  const dispatch = useDispatch();
+
   useEffect(() => {
-         if(admin){
-           navigate('/dashboard')
-         }
-  },[])
+    if (admin) {
+      navigate("/dashboard");
+    }
+  }, []);
 
+  const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    if (email.trim() === "" || password.trim() === "") {
+      setLoading(false);
+      return toast.info("Fill all the fields.");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setLoading(false);
+      return toast.error("Email is not valid");
+    }
+    const adminData = {
+      email,
+      password,
+    };
 
-  const handleLogin = async(e : React.MouseEvent<HTMLButtonElement>) => {
-       e.preventDefault()
-       setLoading(true)
-       if(email.trim() === '' || password.trim() === ''){
-          setLoading(false)
-          return toast.info('Fill all the fields.')
-       }else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setLoading(false)
-        return toast.error("Email is not valid");
-      }
-      const adminData = {
-        email,
-        password
-      }
-
-      const res = await login(adminData)
-      setLoading(false)
-      if(res.status === 'success'){
-          dispatch(adminLogin({email:res.email,token:res.token}))
-          navigate('/dashboard')
-      }
-  }
+    const res = await login(adminData);
+    setLoading(false);
+    if (res.status === "success") {
+      dispatch(adminLogin({ email: res.email, token: res.token }));
+      navigate("/dashboard");
+    }
+  };
 
   return (
     <>
@@ -104,10 +103,16 @@ export const Admin: FC = () => {
             </div>
           </form>
           {loading && (
-        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
-        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
-      </div>
-      )}
+            <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+              <ScaleLoader
+                color="black"
+                loading={loading}
+                cssOverride={override}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+            </div>
+          )}
         </div>
       </div>
     </>

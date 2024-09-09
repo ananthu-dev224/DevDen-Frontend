@@ -37,16 +37,16 @@ export interface gData {
 }
 
 export interface eventData {
-  hostId:String,
-  image:String,
-  description:String,
-  date:String,
-  time:String,
-  venue:String,
-  isFree:Boolean,
-  totalTickets?:Number,
-  ticketPrice?:Number,
-  eventId?:String
+  hostId: String;
+  image: String;
+  description: String;
+  date: String;
+  time: String;
+  venue: String;
+  isFree: Boolean;
+  totalTickets?: Number;
+  ticketPrice?: Number;
+  eventId?: String;
 }
 
 export interface ImageCropperModalProps {
@@ -60,7 +60,6 @@ export interface EditProfileProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
 
 export interface VerifyOtpModalProps {
   isOpen: boolean;
@@ -83,17 +82,17 @@ export interface LoginFormState {
   isModalOpen: boolean;
   email: string;
   password: string;
-  loading:boolean;
+  loading: boolean;
 }
 
 export interface adminSliceType {
-  admin:string | null;
-  token:string | null;
+  admin: string | null;
+  token: string | null;
 }
 
 export interface adminSlicePayload {
-  email:string;
-  token:string;
+  email: string;
+  token: string;
 }
 
 export interface userSlicePayload {
@@ -110,7 +109,7 @@ export interface userSlicePayload {
   place?: string;
   isActive: boolean;
   createdAt: string;
-  googleId?:string;
+  googleId?: string;
 }
 
 export interface editProfilePayload {
@@ -127,20 +126,20 @@ export interface editProfilePayload {
   place?: string;
   isActive: boolean;
   createdAt: string;
-  googleId?:string;
+  googleId?: string;
 }
 
 export interface userSliceType {
   user: userSlicePayload | null;
-  token:string | null;
+  token: string | null;
 }
 
 export interface users {
-  _id:string;
-  username:string;
-  email:string;
-  isActive:boolean;
-  createdAt:string;
+  _id: string;
+  username: string;
+  email: string;
+  isActive: boolean;
+  createdAt: string;
 }
 
 export interface profileData {
@@ -204,7 +203,7 @@ export interface CardProps {
   ticketsLeft?: number;
   ticketPrice?: number;
   likeCount: any[];
-  isProfile?:boolean;
+  isProfile?: boolean;
   profileEventChange?: () => void;
   fetchSaved?: () => void;
 }

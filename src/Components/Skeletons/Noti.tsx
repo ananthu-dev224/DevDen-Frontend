@@ -3,9 +3,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 export const NotiSkeleton = () => {
   return (
-      <div className="w-full">
-        <Skeleton height={40} />
-      </div>
+    <div className="w-full">
+      <Skeleton height={40} />
+    </div>
   );
 };
 

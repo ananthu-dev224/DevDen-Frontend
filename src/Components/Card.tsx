@@ -1,4 +1,4 @@
-import { FC, useState, useEffect,CSSProperties } from "react";
+import { FC, useState, useEffect, CSSProperties } from "react";
 import pfp from "../assets/pfp.jpeg";
 import ReportModal from "./Report";
 import { Elements } from "@stripe/react-stripe-js";
@@ -16,7 +16,12 @@ import {
 import DotDropdown from "./DotDropdown";
 import { confirmAlert } from "react-confirm-alert";
 import { useDispatch, useSelector } from "react-redux";
-import { abortEvent, likeEvent, saveEvent, checkSaved } from "../services/event";
+import {
+  abortEvent,
+  likeEvent,
+  saveEvent,
+  checkSaved,
+} from "../services/event";
 import { eventDetails } from "../services/ticket";
 import { toast } from "sonner";
 import EditEventModal from "./EditEventModal";
@@ -52,7 +57,7 @@ const Card: FC<CardProps> = ({
   likeCount,
   isProfile,
   profileEventChange,
-  fetchSaved
+  fetchSaved,
 }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [isReport, setReport] = useState(false);
@@ -63,7 +68,7 @@ const Card: FC<CardProps> = ({
   const [isBuyTicketsModalOpen, setBuyTicketsModalOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [likes, setLikes] = useState(likeCount);
-  const [loading,setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);
 
@@ -80,14 +85,14 @@ const Card: FC<CardProps> = ({
   };
 
   useEffect(() => {
-    if(user?._id){
+    if (user?._id) {
       const checkIfSaved = async () => {
-        const result = await checkSaved(eventId,dispatch);
-        if (result.status === 'success') {
+        const result = await checkSaved(eventId, dispatch);
+        if (result.status === "success") {
           setIsSaved(result.isSaved);
         }
       };
-    
+
       checkIfSaved();
     }
   }, [eventId, user?._id, dispatch]);
@@ -164,9 +169,9 @@ const Card: FC<CardProps> = ({
                   {
                     label: "Yes",
                     onClick: async () => {
-                      setLoading(true)
+                      setLoading(true);
                       const result = await abortEvent(eventId, dispatch);
-                      setLoading(false)
+                      setLoading(false);
                       if (result.status === "success") {
                         if (profileEventChange) {
                           profileEventChange();
@@ -263,10 +268,16 @@ const Card: FC<CardProps> = ({
           )}
         </div>
         {loading && (
-        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
-        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
-      </div>
-      )}
+          <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+            <ScaleLoader
+              color="black"
+              loading={loading}
+              cssOverride={override}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          </div>
+        )}
         <ReportModal
           isOpen={isReport}
           onRequestClose={() => setReport(false)}

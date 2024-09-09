@@ -79,10 +79,10 @@ const TicketCard: FC = () => {
           label: "Yes",
           onClick: async () => {
             try {
-              setLoading(true)
+              setLoading(true);
               const cancelData = { ticketId };
               const result = await cancelTicket(cancelData, dispatch);
-              setLoading(false)
+              setLoading(false);
               if (result.status === "success") {
                 toast.success(result.message);
                 fetchTickets();

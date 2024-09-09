@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import ReactDOM from 'react-dom';
-import { ReportModalProps } from '../types/type';
-import { reportComment, reportEvent } from '../services/report';
-import {toast} from 'sonner'
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import ReactDOM from "react-dom";
+import { ReportModalProps } from "../types/type";
+import { reportComment, reportEvent } from "../services/report";
+import { toast } from "sonner";
 
-
-const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose, category, id }) => {
-  const [selectedReportType, setSelectedReportType] = useState<string>('');
+const ReportModal: React.FC<ReportModalProps> = ({
+  isOpen,
+  onRequestClose,
+  category,
+  id,
+}) => {
+  const [selectedReportType, setSelectedReportType] = useState<string>("");
   const dispatch = useDispatch();
 
   if (!isOpen) return null;
@@ -21,22 +25,22 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose, categ
     if (selectedReportType) {
       const data = {
         id,
-        type: selectedReportType
-      }
+        type: selectedReportType,
+      };
       try {
-        if (category === 'event') {
-          const res = await reportEvent(data,dispatch);
-          if(res.status === 'success'){
-             toast.success('Event reported successfully.')
+        if (category === "event") {
+          const res = await reportEvent(data, dispatch);
+          if (res.status === "success") {
+            toast.success("Event reported successfully.");
           }
-        } else if (category === 'comment') {
-          const res = await reportComment(data,dispatch);
-          if(res.status === 'success'){
-            toast.success('Comment reported successfully.')
-         }
+        } else if (category === "comment") {
+          const res = await reportComment(data, dispatch);
+          if (res.status === "success") {
+            toast.success("Comment reported successfully.");
+          }
         }
       } catch (error) {
-        console.error('Error reporting:', error);
+        console.error("Error reporting:", error);
       }
     }
     onRequestClose();
@@ -78,7 +82,5 @@ const ReportModal: React.FC<ReportModalProps> = ({ isOpen, onRequestClose, categ
     document.body
   );
 };
-
-
 
 export default ReportModal;

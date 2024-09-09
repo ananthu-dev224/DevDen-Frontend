@@ -27,7 +27,6 @@ const EventPortal: FC = () => {
     fetchEvents();
   }, [dispatch]);
 
-  
   const handleApprove = async (id: string) => {
     try {
       confirmAlert({
@@ -67,8 +66,12 @@ const EventPortal: FC = () => {
         <div className="flex flex-col space-y-10 pb-20 md:pb-0">
           {currentItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full">
-              <h1 className="text-xl font-semibold text-gray-700">No events available in the portal</h1>
-              <p className="text-gray-500 mt-2">It looks like there are no events to display at the moment.</p>
+              <h1 className="text-xl font-semibold text-gray-700">
+                No events available in the portal
+              </h1>
+              <p className="text-gray-500 mt-2">
+                It looks like there are no events to display at the moment.
+              </p>
             </div>
           ) : (
             <>
@@ -93,7 +96,7 @@ const EventPortal: FC = () => {
                       description={event.description}
                     />
                     <div className="absolute bottom-0 left-0 right-0 p-4  flex justify-center items-center">
-                      Make Event Live on DevDen : &nbsp; 
+                      Make Event Live on DevDen : &nbsp;
                       <button
                         onClick={() => handleApprove(event._id)}
                         className="px-4 py-2 bg-green-500 text-white font-semibold rounded-md hover:bg-green-600"

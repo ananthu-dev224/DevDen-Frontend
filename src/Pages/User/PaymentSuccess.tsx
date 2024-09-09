@@ -12,7 +12,7 @@ const PaymentSuccess: FC = () => {
   const searchParams = new URLSearchParams(location.search);
   const sessionId = searchParams.get("session_id");
   const dispatch = useDispatch();
-  
+
   const hasProcessedRef = useRef(false);
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const PaymentSuccess: FC = () => {
         try {
           const data = {
             sessionId,
-            method: 'stripe'
+            method: "stripe",
           };
           const res = await buyTicket(data, dispatch);
           if (res.status === "success") {
@@ -49,7 +49,9 @@ const PaymentSuccess: FC = () => {
               Payment Successful ✅
             </h1>
             <p className="text-gray-500 mt-2">
-              {purchased ? 'Ticket purchased, Thank you 🤩' : 'We are processing your ticket purchase, Just a moment...'}
+              {purchased
+                ? "Ticket purchased, Thank you 🤩"
+                : "We are processing your ticket purchase, Just a moment..."}
             </p>
           </div>
         </div>

@@ -4,9 +4,9 @@ import "react-loading-skeleton/dist/skeleton.css";
 
 export const EventCardSkeleton = () => {
   return (
-      <div className="mb-3">
-        <Skeleton height={150} width={300}/>
-      </div>
+    <div className="mb-3">
+      <Skeleton height={150} width={300} />
+    </div>
   );
 };
 

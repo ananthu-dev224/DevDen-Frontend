@@ -1,9 +1,7 @@
 import QRStatus from "../../Components/QRStatus";
 
 const VerifyQR = () => {
-    return (
-        <QRStatus />
-    )
-}
+  return <QRStatus />;
+};
 
 export default VerifyQR;

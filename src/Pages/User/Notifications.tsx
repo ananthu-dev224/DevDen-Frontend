@@ -141,7 +141,7 @@ const Notifications: FC = () => {
                   className="space-y-4 overflow-y-auto scrollbar-hide"
                   style={{ maxHeight: "calc(95vh - 200px)" }}
                 >
-                   {notiLoading && (
+                  {notiLoading && (
                     <>
                       {Array.from({ length: 10 }).map((_, index) => (
                         <NotiSkeleton key={index} />

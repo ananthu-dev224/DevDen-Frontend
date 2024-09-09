@@ -1,11 +1,13 @@
-
 import React, { useState, useCallback, FC } from "react";
 import Cropper from "react-easy-crop";
 import { Area } from "react-easy-crop/types";
 import { EventCropProps } from "../types/type";
 
-
-const EventCrop: FC<EventCropProps> = ({ imageSrc, onCropComplete, onClose }) => {
+const EventCrop: FC<EventCropProps> = ({
+  imageSrc,
+  onCropComplete,
+  onClose,
+}) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedArea, setCroppedArea] = useState<Area | null>(null);
@@ -18,9 +20,12 @@ const EventCrop: FC<EventCropProps> = ({ imageSrc, onCropComplete, onClose }) =>
     setZoom(zoom);
   };
 
-  const onCropCompleteHandler = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
-    setCroppedArea(croppedAreaPixels);
-  }, []);
+  const onCropCompleteHandler = useCallback(
+    (croppedArea: Area, croppedAreaPixels: Area) => {
+      setCroppedArea(croppedAreaPixels);
+    },
+    []
+  );
 
   const cropImage = useCallback(async () => {
     if (!croppedArea) return;
@@ -49,10 +54,10 @@ const EventCrop: FC<EventCropProps> = ({ imageSrc, onCropComplete, onClose }) =>
     const croppedImage = canvas.toDataURL("image/jpeg");
     canvas.toBlob((blob: Blob | null) => {
       if (blob) {
-        onCropComplete(croppedImage,blob);
+        onCropComplete(croppedImage, blob);
         onClose();
       }
-    }, 'image/jpeg');
+    }, "image/jpeg");
   }, [croppedArea, imageSrc, onCropComplete, onClose]);
 
   return (
@@ -81,7 +86,5 @@ const EventCrop: FC<EventCropProps> = ({ imageSrc, onCropComplete, onClose }) =>
     </div>
   );
 };
-
-
 
 export default EventCrop;

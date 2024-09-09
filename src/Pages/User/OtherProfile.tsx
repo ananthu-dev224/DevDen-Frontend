@@ -140,7 +140,6 @@ const OtherProfile: FC = () => {
     const data = {
       recieverId: userId,
     };
-    console.log(data);
     const res = await addConversation(data, dispatch);
     if (res.status === "success") {
       navigate(`/chat?conversationId=${res.conversation._id}`);

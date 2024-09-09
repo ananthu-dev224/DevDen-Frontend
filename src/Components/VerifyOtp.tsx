@@ -1,12 +1,12 @@
-import { FC, useState, useEffect, CSSProperties} from "react";
+import { FC, useState, useEffect, CSSProperties } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
 import { IoClose } from "react-icons/io5";
-import { useDispatch  } from "react-redux";
+import { useDispatch } from "react-redux";
 import { userLogin } from "../redux/reducers/userSlice";
 import { verifyOtp, resendOtp } from "../services/userAuth";
 import { toast } from "react-toastify";
-import ScaleLoader from 'react-spinners/ScaleLoader';
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 // Types
 import { VerifyOtpModalProps } from "../types/type";
@@ -44,12 +44,12 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
   password,
 }) => {
   const [otp, setOtp] = useState<string>("");
-  const [otpTimer, setOtpTimer] = useState<number>(30); 
+  const [otpTimer, setOtpTimer] = useState<number>(30);
   const [showResendButton, setShowResendButton] = useState<boolean>(false);
   const [startTimer, setStartTimer] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   useEffect(() => {
     setOtpTimer(30); // Reset timer when modal opens
@@ -66,26 +66,28 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
     }, 1000);
 
     return () => clearInterval(timer); // Cleanup timer on component unmount or modal close
-  }, [isOpen,startTimer]); // Depend on isOpen so that it resets every time the modal opens
+  }, [isOpen, startTimer]); // Depend on isOpen so that it resets every time the modal opens
 
   const handleResendOtp = () => {
-    setStartTimer(true)
-    setLoading(true)
+    setStartTimer(true);
+    setLoading(true);
     const resendData = {
       email,
       username,
     };
     resendOtp(resendData).then((res) => {
-      setLoading(false)
+      setLoading(false);
       if (res.status === "success") {
         toast.success(`OTP successfully sent to ${res.email}`);
       }
     });
   };
 
-  const handleVerifyOtp = async (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleVerifyOtp = async (
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
     event.preventDefault();
-    setLoading(true)
+    setLoading(true);
     if (otp.trim() === "" || otp.length !== 6) {
       return toast.error("Enter 6 digit OTP");
     }
@@ -96,9 +98,9 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
       password,
     };
     const result = await verifyOtp(otpData);
-    setLoading(false)
+    setLoading(false);
     if (result.status === "success") {
-      dispatch(userLogin({user:result.newUser,token:result.token}))
+      dispatch(userLogin({ user: result.newUser, token: result.token }));
       onRequestClose();
       navigate("/home");
     }
@@ -151,10 +153,16 @@ const VerifyOtpModal: FC<VerifyOtpModalProps> = ({
           )}
         </div>
         {loading && (
-        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
-        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
-      </div>
-      )}
+          <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+            <ScaleLoader
+              color="black"
+              loading={loading}
+              cssOverride={override}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          </div>
+        )}
         <div className="flex justify-center mb-4">
           <button
             type="submit"

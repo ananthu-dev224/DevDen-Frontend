@@ -1,14 +1,18 @@
 import React, { FC, useState, useEffect } from "react";
 import { FaTimes, FaFlag, FaTrash, FaHeart, FaReply } from "react-icons/fa";
-import { fetchComments, addComment, deleteComment, likeComment } from "../services/comment";
+import {
+  fetchComments,
+  addComment,
+  deleteComment,
+  likeComment,
+} from "../services/comment";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "sonner";
-import { confirmAlert } from 'react-confirm-alert';
+import { confirmAlert } from "react-confirm-alert";
 import pfp from "../assets/pfp.jpeg";
 import { calculatePostedTime } from "../utils/postedTime";
 import { CommentModalProps } from "../types/type";
 import ReportModal from "./Report";
-
 
 const CommentModal: FC<CommentModalProps> = ({
   eventId,
@@ -17,8 +21,8 @@ const CommentModal: FC<CommentModalProps> = ({
 }) => {
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState("");
-  const [reportComment,setReportComment] = useState('');
-  const [isReportModal,setReportModal] = useState(false);
+  const [reportComment, setReportComment] = useState("");
+  const [isReportModal, setReportModal] = useState(false);
   const user = useSelector((store: any) => store.user.user);
   const dispatch = useDispatch();
 
@@ -100,14 +104,13 @@ const CommentModal: FC<CommentModalProps> = ({
   };
 
   const closeReport = () => {
-      setReportModal(false)
-  }
+    setReportModal(false);
+  };
 
-  const handleReport = (id:any) => {
-      setReportComment(id)
-      setReportModal(true)
-  }
-
+  const handleReport = (id: any) => {
+    setReportComment(id);
+    setReportModal(true);
+  };
 
   return (
     <div
@@ -175,19 +178,19 @@ const CommentModal: FC<CommentModalProps> = ({
                         className="absolute top-2 right-2 text-gray-500 hover:text-red-500 cursor-pointer transition duration-150 text-xs"
                         onClick={() => {
                           confirmAlert({
-                            title: 'Confirm to Delete Comment',
-                            message: 'Are you sure?',
+                            title: "Confirm to Delete Comment",
+                            message: "Are you sure?",
                             buttons: [
                               {
-                                label: 'Yes',
+                                label: "Yes",
                                 onClick: () => {
                                   handleDeleteComment(comment._id);
-                                }
+                                },
                               },
                               {
-                                label: 'No',
-                              }
-                            ]
+                                label: "No",
+                              },
+                            ],
                           });
                         }}
                       />
@@ -206,9 +209,10 @@ const CommentModal: FC<CommentModalProps> = ({
                       />
                       <span>{comment.likes.length}</span>
                     </button>
-                    <button 
-                    onClick={() => handleReport(comment._id)}
-                    className="flex items-center hover:text-gray-700 transition duration-150 text-xs">
+                    <button
+                      onClick={() => handleReport(comment._id)}
+                      className="flex items-center hover:text-gray-700 transition duration-150 text-xs"
+                    >
                       <FaFlag className="mr-1" />
                       <span>Report</span>
                     </button>
@@ -224,7 +228,12 @@ const CommentModal: FC<CommentModalProps> = ({
             <p className="text-gray-500 text-center">No comments yet.</p>
           )}
         </div>
-        <ReportModal category="comment" isOpen={isReportModal} onRequestClose={closeReport} id={reportComment} />
+        <ReportModal
+          category="comment"
+          isOpen={isReportModal}
+          onRequestClose={closeReport}
+          id={reportComment}
+        />
       </div>
     </div>
   );

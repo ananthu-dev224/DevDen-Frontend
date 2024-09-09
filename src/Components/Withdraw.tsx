@@ -128,6 +128,4 @@ const WithdrawModal: FC<WithdrawProps> = ({
   );
 };
 
-
-
 export default WithdrawModal;

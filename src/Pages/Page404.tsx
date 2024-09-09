@@ -1,5 +1,4 @@
-
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
 
 const Page404 = () => {
   return (
@@ -11,7 +10,8 @@ const Page404 = () => {
         </p>
         <p className="text-md text-gray-500 mt-2 animate-fadeIn animation-delay-200">
           The page you are looking for does not exist.
-        </p> <br />
+        </p>{" "}
+        <br />
         <Link
           to="/home"
           className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-md text-lg font-medium hover:bg-blue-500 transition-all duration-300 ease-in-out animate-fadeIn animation-delay-400"
@@ -22,9 +22,5 @@ const Page404 = () => {
     </div>
   );
 };
-
-
-
-
 
 export default Page404;

@@ -3,9 +3,12 @@ import { toast } from "sonner";
 import { profileData, dpData, bannerData } from "../types/type";
 import { userLogout } from "../redux/reducers/userSlice";
 
-// Services of profile and cloudinary 
+// Services of profile and cloudinary
 
-export const setProfile = async (profileData: profileData,dispatch:any): Promise<any> => {
+export const setProfile = async (
+  profileData: profileData,
+  dispatch: any
+): Promise<any> => {
   try {
     const response = await api.post("/user/edit-profile", profileData);
     return response.data;
@@ -15,7 +18,13 @@ export const setProfile = async (profileData: profileData,dispatch:any): Promise
       toast.error(message);
 
       // Check for token verification and authorization errors
-      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+      if (
+        message === "Token expired" ||
+        message === "No token in request" ||
+        message === "Failed to authenticate token" ||
+        message === "Your access has been restricted by the admin." ||
+        message === "Access Denied"
+      ) {
         dispatch(userLogout());
       }
 
@@ -26,7 +35,7 @@ export const setProfile = async (profileData: profileData,dispatch:any): Promise
   }
 };
 
-export const generateSign = async (dispatch:any): Promise<any> => {
+export const generateSign = async (dispatch: any): Promise<any> => {
   try {
     const response = await api.get("/user/cloud-signature");
     return response.data;
@@ -36,7 +45,13 @@ export const generateSign = async (dispatch:any): Promise<any> => {
       toast.error(message);
 
       // Check for token verification and authorization errors
-      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+      if (
+        message === "Token expired" ||
+        message === "No token in request" ||
+        message === "Failed to authenticate token" ||
+        message === "Your access has been restricted by the admin." ||
+        message === "Access Denied"
+      ) {
         dispatch(userLogout());
       }
 
@@ -47,9 +62,9 @@ export const generateSign = async (dispatch:any): Promise<any> => {
   }
 };
 
-export const editDp = async (dpData:dpData,dispatch:any): Promise<any> => {
+export const editDp = async (dpData: dpData, dispatch: any): Promise<any> => {
   try {
-    const response = await api.post("/user/edit-dp",dpData);
+    const response = await api.post("/user/edit-dp", dpData);
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -57,7 +72,13 @@ export const editDp = async (dpData:dpData,dispatch:any): Promise<any> => {
       toast.error(message);
 
       // Check for token verification and authorization errors
-      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+      if (
+        message === "Token expired" ||
+        message === "No token in request" ||
+        message === "Failed to authenticate token" ||
+        message === "Your access has been restricted by the admin." ||
+        message === "Access Denied"
+      ) {
         dispatch(userLogout());
       }
 
@@ -68,9 +89,12 @@ export const editDp = async (dpData:dpData,dispatch:any): Promise<any> => {
   }
 };
 
-export const editBanner = async (bannerData:bannerData,dispatch:any): Promise<any> => {
+export const editBanner = async (
+  bannerData: bannerData,
+  dispatch: any
+): Promise<any> => {
   try {
-    const response = await api.post("/user/edit-banner",bannerData);
+    const response = await api.post("/user/edit-banner", bannerData);
     return response.data;
   } catch (error: any) {
     if (error.response) {
@@ -78,7 +102,13 @@ export const editBanner = async (bannerData:bannerData,dispatch:any): Promise<an
       toast.error(message);
 
       // Check for token verification and authorization errors
-      if (message === "Token expired" || message === 'No token in request' || message === "Failed to authenticate token" || message === "Your access has been restricted by the admin." || message === "Access Denied") {
+      if (
+        message === "Token expired" ||
+        message === "No token in request" ||
+        message === "Failed to authenticate token" ||
+        message === "Your access has been restricted by the admin." ||
+        message === "Access Denied"
+      ) {
         dispatch(userLogout());
       }
 

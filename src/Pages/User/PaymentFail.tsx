@@ -9,9 +9,9 @@ const PaymentFail: FC = () => {
   const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
-      if (!sessionId) {
-        navigate('/')
-      }
+    if (!sessionId) {
+      navigate("/");
+    }
   }, []);
 
   return (
@@ -21,10 +21,10 @@ const PaymentFail: FC = () => {
         <div className="flex flex-col space-y-10 pb-20 md:pb-0">
           <div className="flex flex-col items-center justify-center h-full">
             <h1 className="text-xl font-semibold text-gray-700">
-             Payment Failed ❌
+              Payment Failed ❌
             </h1>
             <p className="text-gray-500 mt-2">
-             Please try again to get the tickets.
+              Please try again to get the tickets.
             </p>
           </div>
         </div>

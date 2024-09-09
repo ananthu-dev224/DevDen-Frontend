@@ -1,7 +1,7 @@
 import { FC, useState, useEffect, useRef, CSSProperties } from "react";
 import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
-import ScaleLoader from 'react-spinners/ScaleLoader';
+import ScaleLoader from "react-spinners/ScaleLoader";
 import { resetPassword, validateResetToken } from "../../services/userAuth";
 
 const override: CSSProperties = {
@@ -42,25 +42,25 @@ export const ResetPass: FC = () => {
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setLoading(true)
+    setLoading(true);
     if (password.trim() === "" || confirmPass.trim() === "") {
-      setLoading(false)
+      setLoading(false);
       toast.info("Fill the fields.");
       return;
     } else if (password !== confirmPass) {
-      setLoading(false)
+      setLoading(false);
       toast.error("Passwords do not match.");
       return;
     }
     const resetData = {
-        password,
-        token
-    }
+      password,
+      token,
+    };
     const res = await resetPassword(resetData);
-    setLoading(false)
-    if(res.status === 'success'){
-        toast.success(res.message)
-        navigate('/login')
+    setLoading(false);
+    if (res.status === "success") {
+      toast.success(res.message);
+      navigate("/login");
     }
   };
 
@@ -115,10 +115,16 @@ export const ResetPass: FC = () => {
           </form>
         </div>
         {loading && (
-        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
-        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
-      </div>
-      )}
+          <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+            <ScaleLoader
+              color="black"
+              loading={loading}
+              cssOverride={override}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          </div>
+        )}
       </div>
     </>
   );

@@ -1,12 +1,12 @@
-import React, { useState, FC, CSSProperties } from 'react';
-import ScaleLoader from 'react-spinners/ScaleLoader';
-import { useDispatch, useSelector } from 'react-redux';
-import {toast} from 'sonner';
+import React, { useState, FC, CSSProperties } from "react";
+import ScaleLoader from "react-spinners/ScaleLoader";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 import axios from "axios";
-import { generateSign } from '../services/profile';
-import { updateEvent } from '../services/event';
-import EventCrop from './EventCrop';
-import { EditEventModalProps } from '../types/type';
+import { generateSign } from "../services/profile";
+import { updateEvent } from "../services/event";
+import EventCrop from "./EventCrop";
+import { EditEventModalProps } from "../types/type";
 
 const override: CSSProperties = {
   display: "block",
@@ -18,9 +18,16 @@ const override: CSSProperties = {
   transform: "translate(-50%, -50%)",
 };
 
-const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initialEventData, profileEventChange }) => {
+const EditEventModal: FC<EditEventModalProps> = ({
+  showModal,
+  closeModal,
+  initialEventData,
+  profileEventChange,
+}) => {
   const [eventData, setEventData] = useState(initialEventData);
-  const [imagePreview, setImagePreview] = useState(initialEventData.image ? initialEventData.image : "");
+  const [imagePreview, setImagePreview] = useState(
+    initialEventData.image ? initialEventData.image : ""
+  );
   const [loading, setLoading] = useState(false);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [showCropper, setShowCropper] = useState(false);
@@ -28,7 +35,9 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
   const dispatch = useDispatch();
   const user = useSelector((store: any) => store.user.user);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value, type } = e.target;
     if (type === "checkbox") {
       setEventData({
@@ -58,7 +67,16 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
   };
 
   const validateForm = () => {
-    const { image, description, date, time, venue, isFree, totalTickets, ticketPrice } = eventData;
+    const {
+      image,
+      description,
+      date,
+      time,
+      venue,
+      isFree,
+      totalTickets,
+      ticketPrice,
+    } = eventData;
     if (!image || !description || !date || !time || !venue) {
       return false;
     }
@@ -72,7 +90,7 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
     e.preventDefault();
     setLoading(true);
     if (!validateForm()) {
-      setLoading(false)
+      setLoading(false);
       toast.info("Please fill out all required fields.");
       return;
     }
@@ -84,13 +102,18 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
       const { signature, timestamp } = await generateSign(dispatch);
       const formData = new FormData();
       formData.append("file", blob, "cropped-image.jpg");
-      formData.append("upload_preset", import.meta.env.VITE_UPLOAD_PRESET || "");
+      formData.append(
+        "upload_preset",
+        import.meta.env.VITE_UPLOAD_PRESET || ""
+      );
       formData.append("timestamp", timestamp.toString());
       formData.append("signature", signature);
       formData.append("cloud_name", import.meta.env.VITE_CLOUD_NAME || "");
 
       const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/image/upload`,
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_CLOUD_NAME
+        }/image/upload`,
         formData,
         {
           params: {
@@ -117,10 +140,10 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
 
     const result = await updateEvent(data, dispatch);
     setLoading(false);
-    if (result.status === 'success') {
+    if (result.status === "success") {
       toast.success("Event updated successfully");
       closeModal();
-      if(profileEventChange){
+      if (profileEventChange) {
         profileEventChange();
       }
     } else {
@@ -133,13 +156,19 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-500 bg-opacity-75">
       <div className="bg-white border border-gray-300 rounded-lg p-6 w-full max-w-2xl mx-4 my-8 relative">
-        <button onClick={closeModal} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+        <button
+          onClick={closeModal}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+        >
           &times;
         </button>
         <div className="max-h-[calc(100vh-4rem)] overflow-y-auto mr-3 p-3">
           <form className="space-y-6">
             <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="image"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Event Image
               </label>
               <input
@@ -152,12 +181,19 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
               />
               {imagePreview && (
                 <div className="mt-4">
-                  <img src={imagePreview} alt="Event Preview" className="w-full h-auto object-cover rounded-md" />
+                  <img
+                    src={imagePreview}
+                    alt="Event Preview"
+                    className="w-full h-auto object-cover rounded-md"
+                  />
                 </div>
               )}
             </div>
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Description
               </label>
               <textarea
@@ -169,7 +205,10 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
               />
             </div>
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="date"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Event Date
               </label>
               <input
@@ -182,7 +221,10 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
               />
             </div>
             <div>
-              <label htmlFor="time" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="time"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Event Time
               </label>
               <input
@@ -195,7 +237,10 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
               />
             </div>
             <div>
-              <label htmlFor="venue" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="venue"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Venue
               </label>
               <input
@@ -218,19 +263,28 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
                 className="h-4 w-4 text-indigo-600 border-gray-300 rounded-sm focus:ring-0 focus:ring-transparent"
               />
               {eventData.isFree ? (
-                <label htmlFor="isFree" className="ml-2 block text-sm font-medium text-gray-700">
-                Event Entry : Free 
-              </label>
-              ):(
-                <label htmlFor="isFree" className="ml-2 block text-sm font-medium text-gray-700">
-                Event Entry : Ticket
-              </label>
+                <label
+                  htmlFor="isFree"
+                  className="ml-2 block text-sm font-medium text-gray-700"
+                >
+                  Event Entry : Free
+                </label>
+              ) : (
+                <label
+                  htmlFor="isFree"
+                  className="ml-2 block text-sm font-medium text-gray-700"
+                >
+                  Event Entry : Ticket
+                </label>
               )}
             </div>
             {!eventData.isFree && (
               <>
                 <div>
-                  <label htmlFor="totalTickets" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="totalTickets"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Total Tickets
                   </label>
                   <input
@@ -243,7 +297,10 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
                   />
                 </div>
                 <div>
-                  <label htmlFor="ticketPrice" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="ticketPrice"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Ticket Price
                   </label>
                   <input
@@ -267,7 +324,13 @@ const EditEventModal: FC<EditEventModalProps> = ({ showModal, closeModal, initia
           </form>
           {loading && (
             <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
-              <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
+              <ScaleLoader
+                color="black"
+                loading={loading}
+                cssOverride={override}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
             </div>
           )}
         </div>

@@ -1,12 +1,12 @@
-import { FC, useState , useEffect, CSSProperties} from "react";
+import { FC, useState, useEffect, CSSProperties } from "react";
 import { toast } from "react-toastify";
 import ForgotPassModal from "../../Components/Forgotpass";
 import { useNavigate } from "react-router-dom";
-import { useDispatch , useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { login, oauth } from "../../services/userAuth";
 import { userLogin } from "../../redux/reducers/userSlice";
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import ScaleLoader from 'react-spinners/ScaleLoader';
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import ScaleLoader from "react-spinners/ScaleLoader";
 // Types
 import { LoginFormState } from "../../types/type";
 
@@ -20,30 +20,29 @@ const override: CSSProperties = {
   transform: "translate(-50%, -50%)",
 };
 
-
 export const Login: FC = () => {
   const [state, setState] = useState<LoginFormState>({
     isModalOpen: false,
     email: "",
     password: "",
-    loading: false
+    loading: false,
   });
 
   const navigate = useNavigate();
-  const user = useSelector((state:any) => state.user.user)
-  const dispatch = useDispatch()
+  const user = useSelector((state: any) => state.user.user);
+  const dispatch = useDispatch();
   useEffect(() => {
-       if(user){
-          navigate('/home')
-       }
-  },[])
+    if (user) {
+      navigate("/home");
+    }
+  }, []);
   const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     setState({ ...state, loading: true });
     if (state.email.trim() === "" || state.password.trim() === "") {
       setState({ ...state, loading: false });
       return toast.info("Fill all the fields.");
-    }else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) {
       setState({ ...state, loading: false });
       return toast.error("Email is not valid");
     }
@@ -54,27 +53,27 @@ export const Login: FC = () => {
     const result = await login(loginData);
     setState({ ...state, loading: false });
     if (result.status === "success") {
-      dispatch(userLogin({user:result.user,token:result.token}))
+      dispatch(userLogin({ user: result.user, token: result.token }));
       navigate("/home");
     }
   };
 
-  const gSuccess = async (res:any) => {
+  const gSuccess = async (res: any) => {
     setState({ ...state, loading: true });
     const gData = {
-      token:res.credential
-    }
+      token: res.credential,
+    };
     const result = await oauth(gData);
     setState({ ...state, loading: false });
     if (result.status === "success") {
-      dispatch(userLogin({user:result.user,token:result.token}))
+      dispatch(userLogin({ user: result.user, token: result.token }));
       navigate("/home");
     }
-  }
+  };
 
   const gFail = () => {
-     toast.error("An error occured in google sigin , please use other method")
-  }
+    toast.error("An error occured in google sigin , please use other method");
+  };
 
   return (
     <>
@@ -134,14 +133,13 @@ export const Login: FC = () => {
             </div>
           </form>
           <div className="flex justify-center mb-4 mt-4">
-          <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-            <div>
-                <GoogleLogin
-                    onSuccess={gSuccess}
-                    onError={gFail}
-                />
-            </div>
-        </GoogleOAuthProvider>
+            <GoogleOAuthProvider
+              clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}
+            >
+              <div>
+                <GoogleLogin onSuccess={gSuccess} onError={gFail} />
+              </div>
+            </GoogleOAuthProvider>
           </div>
           <div className="text-center">
             <p className="text-sm text-gray-600">
@@ -155,10 +153,16 @@ export const Login: FC = () => {
             </p>
           </div>
           {state.loading && (
-        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
-        <ScaleLoader color="black" loading={state.loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
-      </div>
-      )}
+            <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+              <ScaleLoader
+                color="black"
+                loading={state.loading}
+                cssOverride={override}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+            </div>
+          )}
         </div>
       </div>
       <ForgotPassModal

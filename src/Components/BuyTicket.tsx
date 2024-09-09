@@ -1,11 +1,11 @@
-import { FC, useState ,CSSProperties} from "react";
+import { FC, useState, CSSProperties } from "react";
 import { FaTimes, FaPlus, FaMinus } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { checkoutSession } from "../services/ticket";
 import { toast } from "sonner";
 import { loadStripe } from "@stripe/stripe-js";
 import { BuyTicketsModalProps } from "../types/type";
-import ScaleLoader from 'react-spinners/ScaleLoader';
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 const override: CSSProperties = {
   display: "block",
@@ -26,7 +26,7 @@ const BuyTicketModal: FC<BuyTicketsModalProps> = ({
 }) => {
   const [numberOfTickets, setNumberOfTickets] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState("stripe");
-  const [loading,setLoading] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
 
   const handleNumberOfTicketsChange = (amount: number) => {
@@ -42,7 +42,7 @@ const BuyTicketModal: FC<BuyTicketsModalProps> = ({
   const totalCost = ticketPrice * numberOfTickets;
 
   const handlePayment = async () => {
-    setLoading(true)
+    setLoading(true);
     if (paymentMethod === "stripe") {
       try {
         const data = {
@@ -53,8 +53,10 @@ const BuyTicketModal: FC<BuyTicketsModalProps> = ({
         };
 
         const sessionId = await checkoutSession(data, dispatch);
-        setLoading(false)
-        const stripe = await loadStripe(import.meta.env.VITE_STRIPE_API_KEY || "");
+        setLoading(false);
+        const stripe = await loadStripe(
+          import.meta.env.VITE_STRIPE_API_KEY || ""
+        );
 
         if (!stripe) {
           toast.error("Stripe.js has not loaded.");
@@ -150,10 +152,16 @@ const BuyTicketModal: FC<BuyTicketsModalProps> = ({
             </button>
           </div>
           {loading && (
-        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
-        <ScaleLoader color="black" loading={loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
-      </div>
-      )}
+            <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+              <ScaleLoader
+                color="black"
+                loading={loading}
+                cssOverride={override}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -7,7 +7,7 @@ import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  BarElement, // Import BarElement
+  BarElement, 
   PointElement,
   LineElement,
   Title,
@@ -21,7 +21,7 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  BarElement, // Register BarElement
+  BarElement, 
   Title,
   Tooltip,
   Legend
@@ -31,8 +31,8 @@ const Dashboard: FC = () => {
   const [totalCommission, setTotalCommission] = useState(0);
   const [totalUsersActive, setTotalUsersActive] = useState(0);
   const [totalEventsActive, setTotalEventsActive] = useState(0);
-  const [users,setUsers] = useState([])
-  const [earned,setEarned] = useState([])
+  const [users, setUsers] = useState([]);
+  const [earned, setEarned] = useState([]);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -41,8 +41,8 @@ const Dashboard: FC = () => {
       setTotalCommission(data.totalCommission);
       setTotalUsersActive(data.totalUsersActive);
       setTotalEventsActive(data.totalEventsActive);
-      setUsers(data.usersJoinedMonthly)
-      setEarned(data.dailyCommission)
+      setUsers(data.usersJoinedMonthly);
+      setEarned(data.dailyCommission);
     };
 
     fetchData();
@@ -50,7 +50,20 @@ const Dashboard: FC = () => {
 
   // Dummy data for graphs
   const monthlyUsersData = {
-    labels: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+    labels: [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ],
     datasets: [
       {
         label: "Users Joined",

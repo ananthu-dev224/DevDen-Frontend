@@ -67,7 +67,7 @@ const CreateEvent: FC = () => {
       setShowCropper(true);
     } else {
       toast.info("Please select a valid image file (jpeg, jpg, or png).");
-      fileInput.value = '';
+      fileInput.value = "";
     }
   };
 
@@ -298,7 +298,8 @@ const CreateEvent: FC = () => {
                       htmlFor="ticketPrice"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Ticket Price (Note: A 5% commission will be applied to one purchase)
+                      Ticket Price (Note: A 5% commission will be applied to one
+                      purchase)
                     </label>
                     <input
                       type="number"

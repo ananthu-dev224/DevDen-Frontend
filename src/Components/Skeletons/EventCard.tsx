@@ -1,6 +1,6 @@
-import React from 'react';
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
+import React from "react";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 export const EventCard: React.FC = () => {
   return (
@@ -35,6 +35,5 @@ export const EventCard: React.FC = () => {
     </div>
   );
 };
-
 
 export default EventCard;

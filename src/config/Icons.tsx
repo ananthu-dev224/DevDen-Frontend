@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { IconProps } from "../types/type";
 
-export const Home: FC<IconProps> = ({fn}) => (
+export const Home: FC<IconProps> = ({ fn }) => (
   <img
     className="w-6 h-6"
     onClick={fn}
@@ -10,7 +10,7 @@ export const Home: FC<IconProps> = ({fn}) => (
   />
 );
 
-export const Explore: FC<IconProps> = ({fn}) => (
+export const Explore: FC<IconProps> = ({ fn }) => (
   <img
     className="w-6 h-6"
     onClick={fn}
@@ -19,7 +19,7 @@ export const Explore: FC<IconProps> = ({fn}) => (
   />
 );
 
-export const Notification: FC<IconProps> = ({fn}) => (
+export const Notification: FC<IconProps> = ({ fn }) => (
   <img
     className="w-6 h-6"
     onClick={fn}
@@ -28,7 +28,7 @@ export const Notification: FC<IconProps> = ({fn}) => (
   />
 );
 
-export const Host:FC<IconProps> = ({fn}) => (
+export const Host: FC<IconProps> = ({ fn }) => (
   <img
     className="w-6 h-6"
     onClick={fn}
@@ -37,7 +37,7 @@ export const Host:FC<IconProps> = ({fn}) => (
   />
 );
 
-export const Profile: FC<IconProps> = ({fn}) => (
+export const Profile: FC<IconProps> = ({ fn }) => (
   <img
     className="w-6 h-6"
     onClick={fn}
@@ -46,7 +46,7 @@ export const Profile: FC<IconProps> = ({fn}) => (
   />
 );
 
-export const Logout: FC<IconProps> = ({fn}) => (
+export const Logout: FC<IconProps> = ({ fn }) => (
   <img
     className="w-6 h-6"
     onClick={fn}

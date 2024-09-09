@@ -24,7 +24,6 @@ import { calculatePostedTime } from "../../utils/postedTime";
 import WithdrawModal from "../../Components/Withdraw";
 import { ClipLoader } from "react-spinners";
 
-
 const Profile: FC = () => {
   const [isEditProfileOpen, setEditProfileOpen] = useState(false);
   const [isCropperOpen, setCropperOpen] = useState(false);

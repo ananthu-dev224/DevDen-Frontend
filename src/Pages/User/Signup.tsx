@@ -1,10 +1,10 @@
-import { useState, FC, useEffect , CSSProperties } from "react";
+import { useState, FC, useEffect, CSSProperties } from "react";
 import { toast } from "react-toastify";
 import VerifyOtpModal from "../../Components/VerifyOtp";
 import { useSelector } from "react-redux";
 import { signupUser } from "../../services/userAuth";
 import { useNavigate } from "react-router-dom";
-import ScaleLoader from 'react-spinners/ScaleLoader';
+import ScaleLoader from "react-spinners/ScaleLoader";
 // Types
 import { SignupFormState } from "../../types/type";
 
@@ -18,7 +18,6 @@ const override: CSSProperties = {
   transform: "translate(-50%, -50%)",
 };
 
-
 export const Signup: FC = () => {
   const [state, setState] = useState<SignupFormState>({
     isModalOpen: false,
@@ -26,17 +25,16 @@ export const Signup: FC = () => {
     email: "",
     password: "",
     confirmpass: "",
-    loading: false
+    loading: false,
   });
-  const navigate = useNavigate()
-  const user = useSelector((state:any) => state.user.user)
+  const navigate = useNavigate();
+  const user = useSelector((state: any) => state.user.user);
 
   useEffect(() => {
-         if(user){
-          navigate('/home')
-         }
-  },[])
-
+    if (user) {
+      navigate("/home");
+    }
+  }, []);
 
   const handleSignup = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -54,10 +52,12 @@ export const Signup: FC = () => {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) {
       setState({ ...state, loading: false });
       return toast.error("Email is not valid");
-    }else if (!/^[a-z0-9\W]+$/.test(state.username)) {
+    } else if (!/^[a-z0-9\W]+$/.test(state.username)) {
       setState({ ...state, loading: false });
-      return toast.error("Username should contain only small letters, numbers and special cases");
-    }else if (
+      return toast.error(
+        "Username should contain only small letters, numbers and special cases"
+      );
+    } else if (
       !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
         state.password
       )
@@ -75,7 +75,7 @@ export const Signup: FC = () => {
     const result = await signupUser(userData);
     setState({ ...state, loading: false });
     if (result.status === "success") {
-      toast.success(`OTP successfully sent to ${state.email}`)
+      toast.success(`OTP successfully sent to ${state.email}`);
       setState({ ...state, isModalOpen: true });
     }
   };
@@ -97,7 +97,9 @@ export const Signup: FC = () => {
               <input
                 type="text"
                 id="username"
-                onChange={(e) => setState({...state,username:e.target.value})}
+                onChange={(e) =>
+                  setState({ ...state, username: e.target.value })
+                }
                 name="username"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none  focus:ring-black focus:border-gray-950 sm:text-sm"
               />
@@ -112,7 +114,7 @@ export const Signup: FC = () => {
               <input
                 type="email"
                 id="email"
-                onChange={(e) => setState({...state,email:e.target.value})}
+                onChange={(e) => setState({ ...state, email: e.target.value })}
                 name="email"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none  focus:ring-black focus:border-gray-950 sm:text-sm"
               />
@@ -128,7 +130,9 @@ export const Signup: FC = () => {
                 type="password"
                 id="confirmpassword"
                 name="password"
-                onChange={(e) => setState({...state,password:e.target.value})}
+                onChange={(e) =>
+                  setState({ ...state, password: e.target.value })
+                }
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-gray-950 sm:text-sm"
               />
             </div>
@@ -143,7 +147,9 @@ export const Signup: FC = () => {
                 type="password"
                 id="password"
                 name="confirmpassword"
-                onChange={(e) => setState({...state,confirmpass:e.target.value})}
+                onChange={(e) =>
+                  setState({ ...state, confirmpass: e.target.value })
+                }
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-gray-950 sm:text-sm"
               />
             </div>
@@ -170,10 +176,16 @@ export const Signup: FC = () => {
           </div>
         </div>
         {state.loading && (
-        <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
-        <ScaleLoader color="black" loading={state.loading} cssOverride={override} aria-label="Loading Spinner" data-testid="loader" />
-      </div>
-      )}
+          <div className="fixed inset-0 bg-gray-100 bg-opacity-75 flex items-center justify-center z-50">
+            <ScaleLoader
+              color="black"
+              loading={state.loading}
+              cssOverride={override}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          </div>
+        )}
       </div>
       <VerifyOtpModal
         isOpen={state.isModalOpen}

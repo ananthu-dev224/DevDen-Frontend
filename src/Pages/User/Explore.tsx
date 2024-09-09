@@ -74,33 +74,33 @@ const Explore: FC = () => {
             />
           </div>
           {eventLoading && (
-          <>
-            <div className="flex flex-wrap gap-4">
-              {Array.from({ length: 9 }).map((_, index) => (
-                <EventCardSkeleton key={index} />
-              ))}
-            </div>
-          </>
-        )}
+            <>
+              <div className="flex flex-wrap gap-4">
+                {Array.from({ length: 9 }).map((_, index) => (
+                  <EventCardSkeleton key={index} />
+                ))}
+              </div>
+            </>
+          )}
           {loading && <div>Searching...</div>}
           {search.length > 2 && users.length > 0 ? (
             <div className="space-y-4">
               {users.map((user) => (
                 <Link to={`/profile/${user._id}`}>
-                <div
-                  key={user._id}
-                  className="flex items-center border-b border-gray-300 p-2"
-                >
-                  <img
-                    src={user.dp ? user.dp : pfp}
-                    alt={user.username}
-                    className="w-10 h-10 rounded-full mr-3"
-                  />
-                  <div className="flex-1">
-                    <div className="font-bold">{user.username}</div>
-                    <div className="text-gray-500">{user.name}</div>
+                  <div
+                    key={user._id}
+                    className="flex items-center border-b border-gray-300 p-2"
+                  >
+                    <img
+                      src={user.dp ? user.dp : pfp}
+                      alt={user.username}
+                      className="w-10 h-10 rounded-full mr-3"
+                    />
+                    <div className="flex-1">
+                      <div className="font-bold">{user.username}</div>
+                      <div className="text-gray-500">{user.name}</div>
+                    </div>
                   </div>
-                </div>
                 </Link>
               ))}
             </div>
