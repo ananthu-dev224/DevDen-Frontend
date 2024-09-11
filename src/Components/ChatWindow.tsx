@@ -1,5 +1,13 @@
 import { FC, useState, useEffect, useRef } from "react";
-import { FaVideo, FaTrash, FaPaperPlane, FaReply } from "react-icons/fa";
+import {
+  FaVideo,
+  FaTrash,
+  FaPaperPlane,
+  FaReply,
+  FaMicrophone,
+} from "react-icons/fa";
+import { FiFile } from "react-icons/fi";
+import { BsCheckAll } from "react-icons/bs";
 import { IoClose } from "react-icons/io5";
 import pfp from "../assets/pfp.jpeg";
 import socket from "../config/socket";
@@ -23,6 +31,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
 }) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [messageText, setMessageText] = useState("");
+  const [isRead, setIsRead] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [clickedMessageId, setClickedMessageId] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState<any | null>(null);
@@ -32,8 +41,6 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const [callConversationId, setCallConversationId] = useState(null);
   const [inCall, setInCall] = useState<boolean>(false);
   const containerRef = useRef(null);
-
-  let isHandlingIncomingCall = false;
 
   const startVideoCall = async () => {
     // Emit a call request to the recipient
@@ -131,6 +138,19 @@ const ChatWindow: FC<ChatWindowProps> = ({
         const response = await getMessage(conversationId, dispatch);
         if (response.status === "success") {
           setMessages(response.messages);
+          if (response.messages.length > 0) {
+            const lastMessage = response.messages[response.messages.length - 1];
+            if (lastMessage.senderId._id === userId && lastMessage.readBy) {
+              const hasBeenReadByOtherUser = lastMessage.readBy.includes(
+                selectedUser._id
+              );
+              setIsRead(hasBeenReadByOtherUser);
+            } else {
+              setIsRead(false);
+            }
+          } else {
+            setIsRead(false);
+          }
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -145,6 +165,19 @@ const ChatWindow: FC<ChatWindowProps> = ({
       console.log("Received message in window:", message);
       if (message.conversationId === conversationId) {
         setMessages((prevMessages) => [...prevMessages, message]);
+        if (messages.length > 0) {
+          const lastMessage = messages[messages.length - 1];
+          if (lastMessage.senderId._id === userId && lastMessage.readBy) {
+            const hasBeenReadByOtherUser = lastMessage.readBy.includes(
+              selectedUser._id
+            );
+            setIsRead(hasBeenReadByOtherUser);
+          } else {
+            setIsRead(false);
+          }
+        } else {
+          setIsRead(false);
+        }
       }
     });
 
@@ -160,9 +193,26 @@ const ChatWindow: FC<ChatWindowProps> = ({
     // Listen for deleteMessage event
     socket.on("deleteMessage", (data) => {
       console.log("Delete message event:", data);
-      setMessages((prevMessages) =>
-        prevMessages.filter((message) => message._id !== data._id)
-      );
+      setMessages((prevMessages) => {
+        const updatedMessages = prevMessages.filter(
+          (message) => message._id !== data._id
+        );
+
+        if (updatedMessages.length > 0) {
+          const lastMessage = updatedMessages[updatedMessages.length - 1];
+          if (lastMessage.senderId._id === userId && lastMessage.readBy) {
+            const hasBeenReadByOtherUser = lastMessage.readBy.includes(
+              selectedUser._id
+            );
+            setIsRead(hasBeenReadByOtherUser);
+          } else {
+            setIsRead(false);
+          }
+        } else {
+          setIsRead(false);
+        }
+        return updatedMessages;
+      });
     });
 
     const handleIncomingCall = (data: any) => {
@@ -202,6 +252,38 @@ const ChatWindow: FC<ChatWindowProps> = ({
 
   useEffect(() => {
     scrollToBottom();
+    // Function to emit messageRead event to the backend
+    const markMessagesAsRead = () => {
+      if (messages.length > 0) {
+        const lastMessage = messages[messages.length - 1];
+
+        if (
+          lastMessage.senderId._id !== userId &&
+          !lastMessage.readBy.includes(userId)
+        ) {
+          // Emit to the backend that the messages have been read
+          socket.emit("markAsRead", { conversationId, userId });
+        }
+      }
+    };
+
+    // Trigger the markMessagesAsRead function when messages update
+    markMessagesAsRead();
+
+    // Listen for the 'messagesRead' event
+    socket.on(
+      "messagesRead",
+      ({ conversationId: incomingConversationId, userId: readerId }) => {
+        // Ensure the event is for the current conversation
+        if (incomingConversationId === conversationId && userId !== readerId) {
+          setIsRead(true);
+        }
+      }
+    );
+
+    return () => {
+      socket.off("messagesRead");
+    };
   }, [messages]);
 
   const handleTyping = () => {
@@ -245,11 +327,6 @@ const ChatWindow: FC<ChatWindowProps> = ({
 
   const handleDeleteMessage = async (messageId: string) => {
     const res = await deleteMessage(messageId, dispatch);
-    if (res.status === "success") {
-      setMessages((prevMessages) =>
-        prevMessages.filter((message) => message._id !== messageId)
-      );
-    }
     const data = {
       _id: messageId,
       conversationId,
@@ -395,6 +472,14 @@ const ChatWindow: FC<ChatWindowProps> = ({
             </>
           ))}
           <div ref={messagesEndRef} />
+          {isRead && (
+            <div
+              className="flex justify-end items-center text-blue-500 space-x-2"
+              style={{ marginTop: "-1px" }}
+            >
+              <BsCheckAll className="text-lg" />
+            </div>
+          )}
           {isTyping && (
             <div className="bg-gray-200 p-4 rounded-lg w-10 flex align-middle justify-center">
               <div className="typing-dots">
@@ -437,11 +522,14 @@ const ChatWindow: FC<ChatWindowProps> = ({
             onChange={handleInputChange}
             className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
           />
-          {/* <FaImage
-          className="text-gray-500 cursor-pointer hover:text-gray-800"
-          size={24}
-          onClick={handleImageClick}
-        /> */}
+          <FiFile
+            className="text-gray-500 cursor-pointer hover:text-gray-800"
+            size={24}
+          />
+          <FaMicrophone
+            className="text-gray-500 cursor-pointer hover:text-gray-800"
+            size={24}
+          />
           <FaPaperPlane
             className="text-blue-500 cursor-pointer hover:text-blue-700"
             size={24}
