@@ -6,6 +6,7 @@ import {
   FaReply,
   FaMicrophone,
   FaClock,
+  FaTimes,
 } from "react-icons/fa";
 import { FiFile } from "react-icons/fi";
 import { BsCheckAll } from "react-icons/bs";
@@ -21,6 +22,8 @@ import { Link } from "react-router-dom";
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 import axios from "axios";
 import { toast } from "sonner";
+import CustomAudioPlayer from "./AudioPlayer";
+
 
 interface ChatWindowProps {
   userId: string;
@@ -47,6 +50,14 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const containerRef = useRef(null);
   const fileInputRef = useRef<any>(null);
   const [isSendingFile, setIsSendingFile] = useState<boolean>(false);
+  // audio message
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [audioChunks, setAudioChunks] = useState<any[]>([]);
+  const [recordingTime, setRecordingTime] = useState<number>(0);
+  const [timer, setTimer] = useState<any>(null);
+  const recorderRef = useRef<any>(null);
+
+  const textInputRef = useRef<any>(null);
 
   const startVideoCall = async () => {
     // Emit a call request to the recipient
@@ -385,6 +396,142 @@ const ChatWindow: FC<ChatWindowProps> = ({
     }
   };
 
+  // Start recording
+  const startRecording = async () => {
+    try {
+      // Prevent starting a new recording if one is already active
+      if (isRecording) return;
+  
+      setIsRecording(true);
+      
+      // Request access to audio input (microphone)
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      // Create a new MediaRecorder instance
+      const recorder = new MediaRecorder(stream);
+      recorderRef.current = recorder;
+      
+      
+      // Capture the audio data when available
+      recorder.ondataavailable = (event) => {
+        console.log('Data available:', event.data);
+        setAudioChunks((prev) => [...prev, event.data]);
+      };
+  
+      // Start recording
+      recorder.start();
+  
+      // Start a timer to track the recording duration
+      setTimer(setInterval(() => setRecordingTime((prev) => prev + 1), 1000));
+    } catch (err) {
+      console.error("Failed to start recording", err);
+      toast.error("Failed to access microphone. Please check permissions.");
+      setIsRecording(false);
+    }
+  };
+  
+
+  const stopRecording = () => {
+    if (recorderRef.current) {
+      recorderRef.current.stop(); // Stop the MediaRecorder
+      console.log('recorder stopped!')
+      console.log(audioChunks)
+      // Stop the media stream to release the microphone
+      recorderRef.current.stream.getTracks().forEach((track: any) => track.stop());
+  
+      recorderRef.current = null; // Reset the recorder reference
+      setIsRecording(false); // Update recording state
+    }
+  
+    // Stop and reset the timer
+    if (timer) {
+      clearInterval(timer); // Clear the active timer
+      setTimer(null); // Reset the timer state
+      setRecordingTime(0)
+      console.log(`timer cleared : ${timer} ${recordingTime}`)
+    }
+  };
+  
+
+  // Cancel recording
+  const cancelRecording = () => {
+    // Stop the recording if it is active
+    if (recorderRef.current) {
+      recorderRef.current.stop(); // Stop the MediaRecorder
+      recorderRef.current.stream.getTracks().forEach((track: any) => track.stop()); // Stop the media stream tracks
+      recorderRef.current = null; // Reset the MediaRecorder reference
+    }
+  
+    // Reset the state
+    setIsRecording(false);
+    clearInterval(timer); // Clear the timer
+    setRecordingTime(0); // Reset the recording time
+    setAudioChunks([]); // Clear the recorded audio chunks
+  };
+  
+
+  // Send audio to Cloudinary
+  const sendAudioMessage = async () => {
+    // Stop the recording
+    stopRecording();
+    
+    if (audioChunks.length === 0) {
+      console.error("No audio chunks available.");
+      return;
+    }
+    
+    // Create a Blob from the audioChunks
+    const audioBlob = new Blob(audioChunks);
+    console.log(`Blob size: ${audioBlob.size} bytes`);
+    
+    // Prepare form data
+    const { signature, timestamp } = await generateSign(dispatch);
+    const formData = new FormData();
+    formData.append("file", audioBlob);
+    formData.append("upload_preset", import.meta.env.VITE_UPLOAD_PRESET || "");
+    formData.append("timestamp", timestamp.toString());
+    formData.append("signature", signature);
+    formData.append("cloud_name", import.meta.env.VITE_CLOUD_NAME || "");
+  
+    let response;
+    try {
+      response = await axios.post(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/video/upload`,
+        formData,
+        {
+          params: {
+            api_key: import.meta.env.VITE_CLOUD_API_KEY,
+          },
+        }
+      );
+    } catch (error: any) {
+      toast.error(`Error occurred while sending audio: ${error.message}`);
+      return;
+    }
+    
+    const audioUrl = response?.data.secure_url;
+  
+    const res = await addMessage(
+      {
+        conversationId,
+        text: audioUrl,
+        replyTo: replyMessage,
+        content: "audio",
+      },
+      dispatch
+    );
+    
+    if (res.status === "success") {
+      socket.emit("sendMessage", res.message);
+    } else {
+      console.error("Failed to send file to user");
+    }
+  
+    // Clear audio chunks after successful upload
+    setAudioChunks([]);
+  };
+  
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageText(e.target.value);
     handleTyping();
@@ -408,6 +555,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
     };
     socket.emit("deleteMessage", data);
   };
+
 
   return (
     <>
@@ -572,6 +720,10 @@ const ChatWindow: FC<ChatWindowProps> = ({
                       Your browser does not support the video tag.
                     </video>
                   )}
+
+                  {message.content === "audio" && (
+                    <CustomAudioPlayer audioUrl={message.text}/>
+                  )}
                 </div>
               </div>
             </>
@@ -642,35 +794,55 @@ const ChatWindow: FC<ChatWindowProps> = ({
         )}
 
         <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
-          <input
-            type="text"
-            placeholder="Type a message"
-            value={messageText}
-            onBlur={handleStopTyping}
-            onChange={handleInputChange}
-            className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-          />
-          <FiFile
-            className="text-gray-500 cursor-pointer hover:text-gray-800"
-            size={24}
-            onClick={handleIconClick}
-          />
-          <input
-            type="file"
-            accept="image/*,video/*"
-            style={{ display: "none" }}
-            ref={fileInputRef}
-            onChange={handleSendFile}
-          />
-          <FaMicrophone
-            className="text-gray-500 cursor-pointer hover:text-gray-800"
-            size={24}
-          />
-          <FaPaperPlane
-            className="text-blue-500 cursor-pointer hover:text-blue-700"
-            size={24}
-            onClick={handleSendMessage}
-          />
+          {isRecording ? (
+            <div className="flex items-center gap-2">
+              <p className="text-red-500">Recording: {recordingTime}s</p>
+              <FaTimes
+                className="text-gray-500 cursor-pointer hover:text-gray-800 justify-end"
+                size={24}
+                onClick={cancelRecording}
+              />
+              <FaPaperPlane
+                className="text-blue-500 cursor-pointer hover:text-blue-700"
+                size={24}
+                onClick={sendAudioMessage}
+              />
+            </div>
+          ) : (
+            <>
+              <input
+                type="text"
+                placeholder="Type a message"
+                ref={textInputRef}
+                value={messageText}
+                onBlur={handleStopTyping}
+                onChange={handleInputChange}
+                className="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+              />
+              <FiFile
+                className="text-gray-500 cursor-pointer hover:text-gray-800"
+                size={24}
+                onClick={handleIconClick}
+              />
+              <input
+                type="file"
+                accept="image/*,video/*"
+                style={{ display: "none" }}
+                ref={fileInputRef}
+                onChange={handleSendFile}
+              />
+              <FaMicrophone
+                className="text-gray-500 cursor-pointer hover:text-gray-800"
+                size={24}
+                onClick={startRecording}
+              />
+              <FaPaperPlane
+                className="text-blue-500 cursor-pointer hover:text-blue-700"
+                size={24}
+                onClick={handleSendMessage}
+              />
+            </>
+          )}
         </div>
       </div>
     </>
