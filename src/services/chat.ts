@@ -101,7 +101,7 @@ export const getConversation = async (
 
 // Add message : /user/message
 export const addMessage = async (
-  data: { conversationId: any; text: any; replyTo: any },
+  data: { conversationId: any; text: any; replyTo: any; content?: any },
   dispatch: any
 ): Promise<any> => {
   try {

@@ -5,6 +5,7 @@ import {
   FaPaperPlane,
   FaReply,
   FaMicrophone,
+  FaClock,
 } from "react-icons/fa";
 import { FiFile } from "react-icons/fi";
 import { BsCheckAll } from "react-icons/bs";
@@ -13,10 +14,13 @@ import pfp from "../assets/pfp.jpeg";
 import socket from "../config/socket";
 import { useDispatch } from "react-redux";
 import { getMessage, addMessage, deleteMessage } from "../services/chat";
+import { generateSign } from "../services/profile";
 import { formatTimestamp } from "../utils/chatTime";
 import { confirmAlert } from "react-confirm-alert";
 import { Link } from "react-router-dom";
 import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+import axios from "axios";
+import { toast } from "sonner";
 
 interface ChatWindowProps {
   userId: string;
@@ -41,6 +45,8 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const [callConversationId, setCallConversationId] = useState(null);
   const [inCall, setInCall] = useState<boolean>(false);
   const containerRef = useRef(null);
+  const fileInputRef = useRef<any>(null);
+  const [isSendingFile, setIsSendingFile] = useState<boolean>(false);
 
   const startVideoCall = async () => {
     // Emit a call request to the recipient
@@ -310,6 +316,75 @@ const ChatWindow: FC<ChatWindowProps> = ({
     }
   };
 
+  const handleIconClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleSendFile = async (event: any) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    // Upload to Cloudinary
+    setIsSendingFile(true);
+    const { signature, timestamp } = await generateSign(dispatch);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", import.meta.env.VITE_UPLOAD_PRESET || "");
+    formData.append("timestamp", timestamp.toString());
+    formData.append("signature", signature);
+    formData.append("cloud_name", import.meta.env.VITE_CLOUD_NAME || "");
+    const contentType = file.type.includes("image") ? "image" : "video";
+    try {
+      let response;
+      if (contentType === "video") {
+        response = await axios.post(
+          `https://api.cloudinary.com/v1_1/${
+            import.meta.env.VITE_CLOUD_NAME
+          }/video/upload`,
+          formData,
+          {
+            params: {
+              api_key: import.meta.env.VITE_CLOUD_API_KEY,
+            },
+          }
+        );
+      } else {
+        response = await axios.post(
+          `https://api.cloudinary.com/v1_1/${
+            import.meta.env.VITE_CLOUD_NAME
+          }/image/upload`,
+          formData,
+          {
+            params: {
+              api_key: import.meta.env.VITE_CLOUD_API_KEY,
+            },
+          }
+        );
+      }
+
+      const fileUrl = response?.data.secure_url;
+      handleStopTyping();
+
+      const res = await addMessage(
+        {
+          conversationId,
+          text: fileUrl,
+          replyTo: replyMessage,
+          content: contentType,
+        },
+        dispatch
+      );
+      if (res.status === "success") {
+        setIsSendingFile(false);
+        socket.emit("sendMessage", res.message);
+      } else {
+        console.error("Failed to send file to user");
+      }
+    } catch (error) {
+      toast.error("Failed to send file.");
+      console.error("Error uploading file:", error);
+    }
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageText(e.target.value);
     handleTyping();
@@ -461,17 +536,53 @@ const ChatWindow: FC<ChatWindowProps> = ({
                           : "bg-gray-300 text-gray-700"
                       }`}
                     >
-                      <span className="ml-1 text-sm">
-                        {message.replyTo.text}
-                      </span>
+                      {message.replyTo.content === "image" ? (
+                        <img
+                          src={message.replyTo.text}
+                          alt="reply"
+                          className="w-24 h-24 object-cover rounded-md"
+                        />
+                      ) : message.replyTo.content === "video" ? (
+                        <video
+                          src={message.replyTo.text}
+                          className="w-24 h-24 rounded-md"
+                          controls={false}
+                        />
+                      ) : (
+                        <span className="ml-1 text-sm">
+                          {message.replyTo.text}
+                        </span>
+                      )}
                     </div>
                   )}
-                  {message.text}
+
+                  {message.content === "word" && <p>{message.text}</p>}
+
+                  {message.content === "image" && (
+                    <img
+                      src={message.text}
+                      alt="User-uploaded content"
+                      className="max-w-full h-auto rounded-lg"
+                    />
+                  )}
+
+                  {message.content === "video" && (
+                    <video controls className="max-w-full h-auto rounded-lg">
+                      <source src={message.text} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
                 </div>
               </div>
             </>
           ))}
           <div ref={messagesEndRef} />
+          {isSendingFile && (
+            <div className="flex justify-end items-center text-gray-400">
+              <FaClock className="mr-2 animate-rotate" />
+              <p className="text-sm">Sending file, it might take a moment</p>
+            </div>
+          )}
           {isRead && (
             <div
               className="flex justify-end items-center text-blue-500 space-x-2"
@@ -494,7 +605,8 @@ const ChatWindow: FC<ChatWindowProps> = ({
           <>
             <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
               <p className="text-gray-400 font-semibold">Reply To :</p>
-              <p
+
+              <div
                 className={`p-3 rounded-lg max-w-xs ${
                   replyMessage.senderId === userId ||
                   replyMessage.senderId._id === userId
@@ -502,8 +614,23 @@ const ChatWindow: FC<ChatWindowProps> = ({
                     : "bg-gray-200"
                 }`}
               >
-                {replyMessage.text}
-              </p>
+                {replyMessage.content === "image" ? (
+                  <img
+                    src={replyMessage.text}
+                    alt="reply"
+                    className="w-24 h-24 object-cover rounded-md"
+                  />
+                ) : replyMessage.content === "video" ? (
+                  <video
+                    src={replyMessage.text}
+                    className="w-24 h-24 rounded-md"
+                    controls={false}
+                  />
+                ) : (
+                  <p>{replyMessage.text}</p>
+                )}
+              </div>
+
               <div
                 className="cursor-pointer"
                 onClick={() => setReplyMessage(null)}
@@ -513,6 +640,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
             </div>
           </>
         )}
+
         <div className="flex items-center p-4 border-t border-gray-200 space-x-4">
           <input
             type="text"
@@ -525,6 +653,14 @@ const ChatWindow: FC<ChatWindowProps> = ({
           <FiFile
             className="text-gray-500 cursor-pointer hover:text-gray-800"
             size={24}
+            onClick={handleIconClick}
+          />
+          <input
+            type="file"
+            accept="image/*,video/*"
+            style={{ display: "none" }}
+            ref={fileInputRef}
+            onChange={handleSendFile}
           />
           <FaMicrophone
             className="text-gray-500 cursor-pointer hover:text-gray-800"
