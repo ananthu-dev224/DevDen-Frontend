@@ -24,7 +24,6 @@ import axios from "axios";
 import { toast } from "sonner";
 import CustomAudioPlayer from "./AudioPlayer";
 
-
 interface ChatWindowProps {
   userId: string;
   conversationId: string | null;
@@ -52,10 +51,12 @@ const ChatWindow: FC<ChatWindowProps> = ({
   const [isSendingFile, setIsSendingFile] = useState<boolean>(false);
   // audio message
   const [isRecording, setIsRecording] = useState<boolean>(false);
-  const [audioChunks, setAudioChunks] = useState<any[]>([]);
+  const [audioBlob, setAudioBlob] = useState<any>(null);
+  const chunks = useRef<any>([]);
   const [recordingTime, setRecordingTime] = useState<number>(0);
   const [timer, setTimer] = useState<any>(null);
   const recorderRef = useRef<any>(null);
+  const mediaStream = useRef<any>(null);
 
   const textInputRef = useRef<any>(null);
 
@@ -401,26 +402,27 @@ const ChatWindow: FC<ChatWindowProps> = ({
     try {
       // Prevent starting a new recording if one is already active
       if (isRecording) return;
-  
+
       setIsRecording(true);
-      
+
       // Request access to audio input (microphone)
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
+      mediaStream.current = stream;
+
       // Create a new MediaRecorder instance
-      const recorder = new MediaRecorder(stream);
-      recorderRef.current = recorder;
-      
-      
+      recorderRef.current = new MediaRecorder(stream);
+
       // Capture the audio data when available
-      recorder.ondataavailable = (event) => {
-        console.log('Data available:', event.data);
-        setAudioChunks((prev) => [...prev, event.data]);
+      recorderRef.current.ondataavailable = (event: any) => {
+        console.log("Data available:", event.data);
+        if (event.data.size > 0) {
+          chunks.current.push(event.data);
+        }
       };
-  
+
       // Start recording
-      recorder.start();
-  
+      recorderRef.current.start();
+
       // Start a timer to track the recording duration
       setTimer(setInterval(() => setRecordingTime((prev) => prev + 1), 1000));
     } catch (err) {
@@ -429,61 +431,81 @@ const ChatWindow: FC<ChatWindowProps> = ({
       setIsRecording(false);
     }
   };
-  
 
   const stopRecording = () => {
-    if (recorderRef.current) {
-      recorderRef.current.stop(); // Stop the MediaRecorder
-      console.log('recorder stopped!')
-      console.log(audioChunks)
-      // Stop the media stream to release the microphone
-      recorderRef.current.stream.getTracks().forEach((track: any) => track.stop());
-  
-      recorderRef.current = null; // Reset the recorder reference
-      setIsRecording(false); // Update recording state
-    }
-  
-    // Stop and reset the timer
-    if (timer) {
-      clearInterval(timer); // Clear the active timer
-      setTimer(null); // Reset the timer state
-      setRecordingTime(0)
-      console.log(`timer cleared : ${timer} ${recordingTime}`)
-    }
+    return new Promise<void>((resolve) => {
+      recorderRef.current.onstop = () => {
+        if (chunks.current.length > 0) {
+          const recordedBlob = new Blob(chunks.current, { type: "audio/webm" });
+          setAudioBlob(recordedBlob);
+        } else {
+          console.error("No audio chunks available to create Blob");
+        }
+        chunks.current = [];
+        resolve();
+      };
+
+      if (recorderRef.current && recorderRef.current.state === "recording") {
+        recorderRef.current.stop(); // Stop the MediaRecorder
+      }
+
+      if (mediaStream.current) {
+        mediaStream.current.getTracks().forEach((track: any) => {
+          track.stop();
+        });
+        mediaStream.current = null;
+      }
+
+      setIsRecording(false);
+
+      // Stop and reset the timer
+      if (timer) {
+        clearInterval(timer);
+        setTimer(null);
+        setRecordingTime(0);
+      }
+    });
   };
-  
 
   // Cancel recording
   const cancelRecording = () => {
     // Stop the recording if it is active
     if (recorderRef.current) {
       recorderRef.current.stop(); // Stop the MediaRecorder
-      recorderRef.current.stream.getTracks().forEach((track: any) => track.stop()); // Stop the media stream tracks
       recorderRef.current = null; // Reset the MediaRecorder reference
     }
-  
+
+    if (mediaStream.current) {
+      mediaStream.current.getTracks().forEach((track: any) => {
+        track.stop();
+      });
+      mediaStream.current = null;
+    }
+
     // Reset the state
     setIsRecording(false);
     clearInterval(timer); // Clear the timer
     setRecordingTime(0); // Reset the recording time
-    setAudioChunks([]); // Clear the recorded audio chunks
+    chunks.current = [];
   };
-  
 
   // Send audio to Cloudinary
   const sendAudioMessage = async () => {
     // Stop the recording
-    stopRecording();
-    
-    if (audioChunks.length === 0) {
-      console.error("No audio chunks available.");
+    await stopRecording();
+
+    // Debug log to ensure audioBlob is set
+    console.log("AudioBlob:", audioBlob);
+
+    // Add a delay before sending (for debugging)
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Proceed with sending the audioBlob
+    if (!audioBlob) {
+      toast.error("No audio recorded");
       return;
     }
-    
-    // Create a Blob from the audioChunks
-    const audioBlob = new Blob(audioChunks);
-    console.log(`Blob size: ${audioBlob.size} bytes`);
-    
+
     // Prepare form data
     const { signature, timestamp } = await generateSign(dispatch);
     const formData = new FormData();
@@ -492,11 +514,13 @@ const ChatWindow: FC<ChatWindowProps> = ({
     formData.append("timestamp", timestamp.toString());
     formData.append("signature", signature);
     formData.append("cloud_name", import.meta.env.VITE_CLOUD_NAME || "");
-  
+
     let response;
     try {
       response = await axios.post(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUD_NAME}/video/upload`,
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_CLOUD_NAME
+        }/video/upload`,
         formData,
         {
           params: {
@@ -508,9 +532,9 @@ const ChatWindow: FC<ChatWindowProps> = ({
       toast.error(`Error occurred while sending audio: ${error.message}`);
       return;
     }
-    
+
     const audioUrl = response?.data.secure_url;
-  
+
     const res = await addMessage(
       {
         conversationId,
@@ -520,17 +544,16 @@ const ChatWindow: FC<ChatWindowProps> = ({
       },
       dispatch
     );
-    
+
     if (res.status === "success") {
       socket.emit("sendMessage", res.message);
     } else {
       console.error("Failed to send file to user");
     }
-  
+
     // Clear audio chunks after successful upload
-    setAudioChunks([]);
+    chunks.current = [];
   };
-  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setMessageText(e.target.value);
@@ -555,7 +578,6 @@ const ChatWindow: FC<ChatWindowProps> = ({
     };
     socket.emit("deleteMessage", data);
   };
-
 
   return (
     <>
@@ -722,7 +744,7 @@ const ChatWindow: FC<ChatWindowProps> = ({
                   )}
 
                   {message.content === "audio" && (
-                    <CustomAudioPlayer audioUrl={message.text}/>
+                    <CustomAudioPlayer audioUrl={message.text} />
                   )}
                 </div>
               </div>

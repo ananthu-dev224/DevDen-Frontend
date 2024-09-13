@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { FaPlay, FaPause } from 'react-icons/fa';
 
 const CustomAudioPlayer = ({ audioUrl }: any) => {
-  const audioRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
@@ -11,13 +11,13 @@ const CustomAudioPlayer = ({ audioUrl }: any) => {
     const audio = audioRef.current;
 
     const updateTime = () => {
-      if (!isNaN(audio.currentTime)) {
+      if (audio) {
         setCurrentTime(audio.currentTime);
       }
     };
 
     const setAudioData = () => {
-      if (!isNaN(audio.duration) && audio.duration !== Infinity) {
+      if (audio) {
         setDuration(audio.duration);
       }
     };
@@ -30,6 +30,8 @@ const CustomAudioPlayer = ({ audioUrl }: any) => {
     if (audio) {
       audio.addEventListener('timeupdate', updateTime);
       audio.addEventListener('loadedmetadata', setAudioData);
+      audio.addEventListener('canplay', setAudioData);
+      audio.addEventListener('canplaythrough', setAudioData); // Ensure duration is set
       audio.addEventListener('ended', handleAudioEnd); // Handle when audio ends
     }
 
@@ -37,6 +39,8 @@ const CustomAudioPlayer = ({ audioUrl }: any) => {
       if (audio) {
         audio.removeEventListener('timeupdate', updateTime);
         audio.removeEventListener('loadedmetadata', setAudioData);
+        audio.addEventListener('canplay', setAudioData);
+        audio.removeEventListener('canplaythrough', setAudioData);
         audio.removeEventListener('ended', handleAudioEnd);
       }
     };
@@ -54,10 +58,12 @@ const CustomAudioPlayer = ({ audioUrl }: any) => {
     }
   };
 
-  const handleTimeChange = (e: any) => {
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const audio = audioRef.current;
+    const newTime = parseFloat(e.target.value);
     if (audio) {
-      audio.currentTime = e.target.value;
+      audio.currentTime = newTime;
+      setCurrentTime(newTime);
     }
   };
 
@@ -74,9 +80,9 @@ const CustomAudioPlayer = ({ audioUrl }: any) => {
       <div className="flex items-center space-x-4 w-full">
         <button
           onClick={togglePlay}
-          className={`p-2 rounded-full text-white`}
+          className="p-2 rounded-full text-white"
         >
-          {isPlaying ? <FaPause /> : <FaPlay />} 
+          {isPlaying ? <FaPause /> : <FaPlay />}
         </button>
         <input
           type="range"
