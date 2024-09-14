@@ -10,14 +10,10 @@ const UserProtected: React.FC<{ children: React.ReactNode }> = ({
   const user = useSelector((state: any) => state.user.user);
   const navigate = useNavigate();
 
-  const isFirstRun = useRef(true);
 
   useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false;
-      return;
-    }
-
+    console.log("User token:", userToken);
+    console.log("User status:", user?.isActive);
     if (!userToken) {
       navigate("/login");
     } else if (user && !user.isActive) {

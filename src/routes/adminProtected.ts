@@ -6,13 +6,9 @@ import {toast} from 'sonner';
 const AdminProtected: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const admin_token = useSelector((state: any) => state.admin.token);
   const navigate = useNavigate();
-  const isFirstRun = useRef(true);
+
   React.useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false;
-      return;
-    }
-    
+    console.log("Admin token:", admin_token);
     if (!admin_token) {
       navigate('/admin');
     }
