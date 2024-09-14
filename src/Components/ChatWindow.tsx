@@ -718,6 +718,24 @@ const ChatWindow: FC<ChatWindowProps> = ({
                           className="w-24 h-24 rounded-md"
                           controls={false}
                         />
+                      ): message.replyTo.content === "audio" ? (
+                        <div className="flex items-center space-x-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6 text-gray-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={2}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M9 19V6l12-2v16l-12-2z"
+                            />
+                          </svg>
+                          <span className="text-sm">Audio message</span>
+                        </div>
                       ) : (
                         <span className="ml-1 text-sm">
                           {message.replyTo.text}
@@ -800,7 +818,26 @@ const ChatWindow: FC<ChatWindowProps> = ({
                     className="w-24 h-24 rounded-md"
                     controls={false}
                   />
-                ) : (
+                ) : replyMessage.content === "audio" ? (
+                  <div className="flex items-center space-x-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-gray-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 19V6l12-2v16l-12-2z"
+                      />
+                    </svg>
+                    <span className="text-sm">Audio message</span>
+                  </div>
+                ) :
+                 (
                   <p>{replyMessage.text}</p>
                 )}
               </div>
