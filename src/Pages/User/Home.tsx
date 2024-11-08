@@ -68,7 +68,6 @@ const Home: FC = () => {
 
   useEffect(() => {
     if (!initialLoadComplete) {
-      fetchEvents(page); // Initial fetch
       const fetchHosts = async () => {
         const res = await getTopHosts(dispatch);
         if (res.status === "success") {
@@ -76,6 +75,7 @@ const Home: FC = () => {
         }
       };
       fetchHosts();
+      fetchEvents(page); // Initial fetch
       setInitialLoadComplete(true);
     }
   }, [fetchEvents, page, initialLoadComplete]);
