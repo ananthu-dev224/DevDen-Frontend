@@ -3,12 +3,15 @@ import Navbar from "../../Components/Navbar";
 import Card from "../../Components/Card";
 import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
-import { getEvents } from "../../services/event";
+import { getEvents, getTopHosts } from "../../services/event";
 import { calculatePostedTime } from "../../utils/postedTime";
 import { ClipLoader } from "react-spinners";
+import { Link } from "react-router-dom";
+import pfp from "../../assets/pfp.jpeg";
 
 const Home: FC = () => {
   const [events, setEvents] = useState<any[]>([]);
+  const [hosts, setHosts] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [hasMore, setHasMore] = useState<boolean>(true);
   const [page, setPage] = useState<number>(1);
@@ -77,11 +80,42 @@ const Home: FC = () => {
     };
   }, [handleScroll]);
 
+  useEffect(() => {
+    const fetchHosts = async () => {
+      const res = await getTopHosts(dispatch);
+      if (res.status === "success") {
+        setHosts(res.data);
+      }
+    };
+    fetchHosts();
+  }, []);
+
   return (
     <div className="flex bg-gray-200 min-h-screen">
       <Navbar />
       <div className="flex-1 p-4 md:p-10 ml-0 md:ml-72 overflow-auto">
-        <div className="flex justify-between items-center pb-4"></div>
+        <div className="flex justify-between items-center pb-4">
+          <h1 className="text-lg font-bold animate-fadeIn">Most Popular Hosts</h1>
+        </div>
+
+        <div className="flex space-x-4 overflow-x-auto scrollbar-hide">
+          {hosts.map((host, index) => (
+            <Link to={`/profile/${host._id}`}>
+              <div className="flex flex-col items-center" key={index}>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-blue-500 animate-fadeIn">
+                  <img
+                    src={host.dp || pfp}
+                    alt="host pfp"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-sm sm:text-md font-medium mt-2 mb-5">
+                  @{host.username}
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
         <div className="flex flex-col space-y-10 pb-20 md:pb-0">
           {events.map((event) => {
             const createdAtDate = new Date(event.createdAt);

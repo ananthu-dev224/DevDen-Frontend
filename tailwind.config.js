@@ -12,6 +12,7 @@ module.exports = {
     extend: {
       animation: {
         rotate: 'rotate 2s linear infinite',
+        float: 'float 3s ease-in-out infinite',
         fadeIn: 'fadeIn 1s ease-in-out',
         'fadeIn-delay-200': 'fadeIn 1s ease-in-out 0.2s',
         'fadeIn-delay-400': 'fadeIn 1s ease-in-out 0.4s',
@@ -22,6 +23,10 @@ module.exports = {
         rotate: {
           '0%': { transform: 'rotate(0deg)' },
           '100%': { transform: 'rotate(360deg)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(-2px) scale(1)', borderColor: '#10B981' },
+          '50%': { transform: 'translateY(2px) scale(1.05)', borderColor: '#34D399' },
         },
         fadeIn: {
           '0%': { opacity: 0 },
