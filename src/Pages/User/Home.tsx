@@ -67,28 +67,9 @@ const Home: FC = () => {
   }, [loading, hasMore, fetchEvents]);
 
   useEffect(() => {
-    const fetchInitialData = async () => {
-  
-      // Fetch hosts
-      const fetchHosts = async () => {
-        const res = await getTopHosts(dispatch);
-        if (res.status === "success") {
-          setHosts(res.data);
-        } else {
-          console.error("Failed to fetch hosts");
-        }
-      };
-  
-      // Fetch events
-      await Promise.all([fetchHosts(), fetchEvents(page)]);
-  
-      // Mark initial load as complete after fetching hosts and events
-      setInitialLoadComplete(true);
-    };
-  
-    // Only fetch if it's not loaded already
     if (!initialLoadComplete) {
-      fetchInitialData();
+      fetchEvents(page); // Initial fetch
+      setInitialLoadComplete(true);
     }
   }, [fetchEvents, page, initialLoadComplete]);
 
@@ -98,6 +79,16 @@ const Home: FC = () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [handleScroll]);
+
+  useEffect(() => {
+    const fetchHosts = async () => {
+      const res = await getTopHosts(dispatch);
+      if (res.status === "success") {
+        setHosts(res.data);
+      }
+    };
+    fetchHosts();
+  },[dispatch])
 
 
   return (
