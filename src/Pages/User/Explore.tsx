@@ -132,7 +132,6 @@ const Explore: FC = () => {
                         likeCount={event.likes}
                         image={event.image}
                         description={event.description}
-                        isProfile={true}
                       />
                     </div>
                   ))}
