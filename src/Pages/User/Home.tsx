@@ -69,6 +69,13 @@ const Home: FC = () => {
   useEffect(() => {
     if (!initialLoadComplete) {
       fetchEvents(page); // Initial fetch
+      const fetchHosts = async () => {
+        const res = await getTopHosts(dispatch);
+        if (res.status === "success") {
+          setHosts(res.data);
+        }
+      };
+      fetchHosts();
       setInitialLoadComplete(true);
     }
   }, [fetchEvents, page, initialLoadComplete]);
@@ -80,15 +87,6 @@ const Home: FC = () => {
     };
   }, [handleScroll]);
 
-  useEffect(() => {
-    const fetchHosts = async () => {
-      const res = await getTopHosts(dispatch);
-      if (res.status === "success") {
-        setHosts(res.data);
-      }
-    };
-    fetchHosts();
-  }, []);
 
   return (
     <div className="flex bg-gray-200 min-h-screen">
