@@ -33,7 +33,8 @@ Devden is a social media platform for tech enthusiasts, designed to facilitate h
 ## Future Enhancements  
 
 - Add location-based event mapping and communities.  
-- Support for registering for free events.  
+- Support for registering for free events.
+- Communities
 
 ## Setup  
 
