@@ -36,13 +36,18 @@ export interface gData {
   token: string;
 }
 
+export interface Coordinates {
+  lat: number;
+  lng: number;
+}
+
 export interface eventData {
   hostId: String;
   image: String;
   description: String;
   date: String;
   time: String;
-  venue: String;
+  venue: Coordinates | null;
   isFree: Boolean;
   totalTickets?: Number;
   ticketPrice?: Number;
@@ -224,7 +229,7 @@ export interface EditEventModalProps {
     image: string;
     date: string;
     time: string;
-    venue: string;
+    venue: Coordinates | null;
     isFree: boolean;
     totalTickets?: number;
     ticketPrice?: number;

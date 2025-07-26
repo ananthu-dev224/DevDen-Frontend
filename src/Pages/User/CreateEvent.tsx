@@ -1,12 +1,14 @@
 import { FC, useState, ChangeEvent, CSSProperties } from "react";
 import Navbar from "../../Components/Navbar";
 import EventCrop from "../../Components/EventCrop";
+import MapPicker from "../../Components/MapPicker";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
 import { generateSign } from "../../services/profile";
 import { addEvent } from "../../services/event";
+import { EventData } from "../../types/type";
 import ScaleLoader from "react-spinners/ScaleLoader";
 
 const override: CSSProperties = {
@@ -20,17 +22,18 @@ const override: CSSProperties = {
 };
 
 const CreateEvent: FC = () => {
-  const [eventData, setEventData] = useState({
+  const [eventData, setEventData] = useState<EventData>({
     image: "",
     description: "",
     date: "",
     time: "",
-    venue: "",
+    venue: null,
     isFree: false,
     totalTickets: 0,
     ticketPrice: 0,
   });
   const [loading, setLoading] = useState(false);
+  const [venuename, setVenuename] = useState(null);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -96,6 +99,27 @@ const CreateEvent: FC = () => {
       return false;
     }
     return true;
+  };
+
+  const handleLocationSelect = async (coords: { lat: number; lng: number }) => {
+    try {
+      // Reverse geocode using Google Maps API
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${coords.lat}&lon=${coords.lng}&format=json`
+      );
+
+      const data = await res.json();
+      const address = data.display_name || "Unknown location";
+
+      setEventData((prev: any) => ({
+        ...prev,
+        venue: coords,
+      }));
+
+      setVenuename(address);
+    } catch (error) {
+      console.error("Failed to fetch venue name:", error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -247,9 +271,9 @@ const CreateEvent: FC = () => {
                   htmlFor="venue"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Venue
+                  Choose Venue :
                 </label>
-                <input
+                {/* <input
                   type="text"
                   name="venue"
                   id="venue"
@@ -257,7 +281,19 @@ const CreateEvent: FC = () => {
                   value={eventData.venue}
                   onChange={handleChange}
                   className="mt-1 block w-full rounded-sm border-gray-300 shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 sm:text-sm h-12"
-                />
+                /> */}
+                <MapPicker onLocationSelect={handleLocationSelect} />
+                {eventData.venue && (
+                  <label
+                    htmlFor="venue"
+                    className="flex text-sm font-medium text-gray-700"
+                  >
+                    Selected Venue :
+                    <p className="ml-3 text-sm text-blue-600 underline">
+                      {venuename}
+                    </p>
+                  </label>
+                )}
               </div>
               <div className="flex items-center">
                 <input

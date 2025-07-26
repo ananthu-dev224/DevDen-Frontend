@@ -1,1 +1,1 @@
-export const baseUrl = 'https://devden-backend.ananthuks.online'
+export const baseUrl = 'http://localhost:3000'
